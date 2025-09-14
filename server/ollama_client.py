@@ -54,6 +54,17 @@ def reset_shared_session():
         _shared_session.close()
         _shared_session = None
 
+
+def check_ollama_connection() -> bool:
+    """Check if Ollama is running and accessible"""
+    try:
+        logger.info(f"✅ checking OLLAMA_HEALTH {OLLAMA_URL}/api/tags")
+        response = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
+        return response.status_code == 200
+    except requests.exceptions.RequestException:
+        return False
+
+
 class OllamaAgent:
     """Base class for all Ollama-powered AI agents"""
     
@@ -115,20 +126,62 @@ class OllamaAgent:
         """
         logger.info("🕵️‍♂️ Buscando JSON en el bloque de texto...")
 
-        last_brace_index = text_blob.rfind('{')
-        last_bracket_index = text_blob.rfind('[')
+        # Find the first occurrence of JSON structures to get complete objects
+        first_brace_index = text_blob.find('{')
+        first_bracket_index = text_blob.find('[')
 
-        if last_brace_index == -1 and last_bracket_index == -1:
+        if first_brace_index == -1 and first_bracket_index == -1:
             logger.error("❌ No se encontró un inicio de objeto/array JSON en el texto.")
             return self._create_partial_response(text_blob)
 
-        start_index = max(last_brace_index, last_bracket_index)
-        potential_json = text_blob[start_index:]
+        # Choose the first JSON structure that appears
+        if first_brace_index == -1:
+            start_index = first_bracket_index
+            start_char = '['
+            end_char = ']'
+        elif first_bracket_index == -1:
+            start_index = first_brace_index
+            start_char = '{'
+            end_char = '}'
+        else:
+            if first_brace_index < first_bracket_index:
+                start_index = first_brace_index
+                start_char = '{'
+                end_char = '}'
+            else:
+                start_index = first_bracket_index
+                start_char = '['
+                end_char = ']'
+
+        # Extract only the JSON part by finding the matching closing brace/bracket
+        potential_json = self._extract_json_structure(text_blob, start_index, start_char, end_char)
 
         logger.info(f"💡 Fragmento de JSON potencial encontrado para reparar: {potential_json[:100]}...")
-        
+
         # Llama a la función reparadora con el fragmento aislado
         return self._fix_incomplete_json(potential_json)
+
+    def _extract_json_structure(self, text: str, start_index: int, start_char: str, end_char: str) -> str:
+        """Extract a complete JSON structure from text starting at start_index."""
+        if start_index >= len(text):
+            return ""
+
+        brace_count = 0
+        i = start_index
+
+        while i < len(text):
+            char = text[i]
+            if char == start_char:
+                brace_count += 1
+            elif char == end_char:
+                brace_count -= 1
+                if brace_count == 0:
+                    # Found the matching closing brace/bracket
+                    return text[start_index:i+1]
+            i += 1
+
+        # If we reach here, the JSON is incomplete (no matching closing brace/bracket)
+        return text[start_index:]
 
 
     def _fix_incomplete_json(self, json_str: str) -> Dict[str, Any]:

@@ -5,7 +5,8 @@ import asyncio
 import logging
 from fastapi import WebSocket
 from typing import Dict, Any
-from agents import ImageVisionAgent, AgriVisionAgent, SoilSenseAgent, CropMasterAgent, check_ollama_connection
+from agents import ImageVisionAgent, AgriVisionAgent, SoilSenseAgent, CropMasterAgent
+from ollama_client import check_ollama_connection
 
 logger = logging.getLogger(__name__)
 

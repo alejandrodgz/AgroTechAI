@@ -1,7 +1,6 @@
 """
 AI Agents for Agricultural Monitoring System
 """
-import requests
 import json
 import base64
 from typing import Dict, Any
@@ -15,9 +14,9 @@ from ollama_client import (
     get_shared_session,
     reset_shared_session
 )
+import os
 
 # Configuración de Ollama
-import os
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_GENERATE_API=f"{OLLAMA_URL}/api/generate"
 MODEL_NAME = "gemma3:4b"
@@ -350,13 +349,3 @@ JSON:"""
             "urgent_alerts": [],
             "confidence": 0.0
         }
-
-
-def check_ollama_connection() -> bool:
-    """Check if Ollama is running and accessible"""
-    try:
-        logger.info(f"✅ checking OLLAMA_HEALTH {OLLAMA_URL}/api/tags")
-        response = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
-        return response.status_code == 200
-    except requests.exceptions.RequestException:
-        return False

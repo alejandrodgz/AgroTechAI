@@ -8,7 +8,8 @@ import os
 from datetime import datetime
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from agents import check_ollama_connection, MODEL_NAME
+from agents import MODEL_NAME
+from ollama_client import check_ollama_connection
 from websocket_handler import websocket_handler
 
 # Configure logging
