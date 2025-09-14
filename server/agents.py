@@ -10,7 +10,11 @@ import io
 import asyncio
 import logging
 import time
-from ollama_client import OllamaAgent
+from ollama_client import (
+    OllamaAgent,
+    get_shared_session,
+    reset_shared_session
+)
 
 # Configuración de Ollama
 import os
@@ -223,7 +227,11 @@ REGLAS IMPORTANTES:
 
 JSON:"""
 
-        return await self.generate_response(prompt)
+        try:
+            return await self.generate_response(prompt)
+        except Exception as e:
+            logger.error(f"❌ [{self.role}] Analysis failed: {e}")
+            return self._get_fallback_response()
     
     def _get_fallback_response(self) -> Dict[str, Any]:
         return {

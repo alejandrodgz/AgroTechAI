@@ -36,12 +36,19 @@ class WebSocketHandler:
                 # Esperar mensaje del cliente
                 message = await websocket.receive_json()
                 await self.process_message(websocket, message)
-                
+
         except Exception as e:
-            await websocket.send_json({
-                "type": "error", 
-                "message": f"Error en WebSocket: {str(e)}"
-            })
+            logger.error(f"❌ WebSocket error: {e}")
+            try:
+                await websocket.send_json({
+                    "type": "error",
+                    "message": f"Error en WebSocket: {str(e)}"
+                })
+            except:
+                # If we can't send the error message, the connection is likely closed
+                pass
+            # Re-raise the exception so calling code can handle connection cleanup
+            raise
     
     async def process_message(self, websocket: WebSocket, message: Dict[str, Any]):
         """Process incoming WebSocket messages"""

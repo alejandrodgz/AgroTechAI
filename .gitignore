@@ -3,6 +3,7 @@ node_modules/
 */node_modules/
 
 # Python virtual environments
+python3.12/
 demo/
 venv/
 env/
@@ -25,3 +26,13 @@ __pycache__/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Miscelanous folder to ignore
+misc
+
+## Coverage
+.coverage
+htmlcov/
+coverage.xml
+report.html
+acceptance_coverage.xml

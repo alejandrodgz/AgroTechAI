@@ -3,7 +3,8 @@ AI Agents for Agricultural Monitoring System
 """
 import requests
 import json
-from typing import Dict, Any
+import re
+from typing import Dict, Any, List
 import logging
 import time
 from requests.adapters import HTTPAdapter

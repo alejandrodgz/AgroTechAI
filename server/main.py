@@ -70,6 +70,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 @app.websocket("/ws")
@@ -88,7 +89,7 @@ async def websocket_endpoint(websocket: WebSocket):
 async def root():
     """Root endpoint with API information"""
     return {
-        "message": "AgroTech AI Agents Demo - Powered by Ollama", 
+        "message": "AgroTech AI Agents Demo - Powered by Ollama",
         "model": MODEL_NAME,
         "version": "1.0.0",
         "endpoints": {
@@ -97,6 +98,11 @@ async def root():
             "docs": "/docs"
         }
     }
+
+@app.options("/")
+async def root_options():
+    """Handle OPTIONS request for root endpoint"""
+    return {"message": "OK"}
 
 @app.get("/health")
 async def health_check():
