@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Line } from 'react-chartjs-2';
 import ScenarioForm from './ScenarioForm.jsx';
-import './styles.css';
+import '~/styles.css';
 
 function App() {
     const [agentData, setAgentData] = useState({
