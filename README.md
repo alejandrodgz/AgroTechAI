@@ -43,19 +43,33 @@ This project follows a client-server architecture with multi-agent AI coordinati
 ```
 AgroTech AI/
 ├── client/              # React frontend application
-│   ├── app.jsx          # Main React component with agent coordination
-│   ├── ScenarioForm.jsx # Image upload and environment input form
-│   ├── ImageUpload.jsx  # Drag-and-drop image upload component
+│   ├── src/             # Source code
+│   │   ├── components/  # React components
+│   │   │   ├── app.jsx          # Main app with agent coordination
+│   │   │   ├── ScenarioForm.jsx # Image upload and environment form
+│   │   │   └── ImageUpload.jsx  # Drag-and-drop upload component
+│   │   └── utils/       # Utility functions
+│   │       └── websocket-utils.js # WebSocket helper functions
+│   ├── tests/           # Test suite
+│   │   ├── unit/        # Unit tests for components
+│   │   ├── integration/ # Integration tests
+│   │   ├── test-setup.js # Test configuration
+│   │   └── test-styles.css # Mock styles
 │   ├── main.jsx         # React entry point
 │   ├── index.html       # HTML template
 │   ├── styles.css       # Tailwind CSS styles
-│   └── package.json     # Frontend dependencies
+│   ├── package.json     # Frontend dependencies
+│   └── vite.config.js   # Build and test configuration
 ├── server/              # FastAPI backend application
 │   ├── main.py          # FastAPI server with WebSocket support
 │   ├── agents.py        # AI agents implementation
 │   ├── websocket_handler.py # WebSocket communication handler
-│   ├── requirements.txt # Python dependencies
+│   ├── tests/           # Python test suite
+│   │   ├── unit/        # Unit tests
+│   │   └── integration/ # Integration tests
+│   ├── pyproject.toml   # Python project configuration
 │   └── Dockerfile       # Docker container configuration
+├── Makefile             # Development commands for both client/server
 └── docker-compose.yml   # Multi-service Docker orchestration
 ```
 
@@ -342,7 +356,78 @@ The system includes four pre-configured environmental scenarios:
 
 ## 🔧 Development
 
-### Server Development
+### Quick Start with Makefile
+
+This project includes a comprehensive Makefile for easy development. View all available commands:
+
+```bash
+make help
+```
+
+### Setup Commands
+```bash
+# Install dependencies
+make install          # Python production dependencies
+make install-dev      # Python development dependencies
+make js-install       # JavaScript dependencies
+```
+
+### Development Commands
+```bash
+# Start development servers
+make py-run           # Start Python/FastAPI server (port 8000)
+make js-run           # Start JavaScript/React client (port 3000)
+make run-docker       # Start full stack with Docker Compose
+```
+
+### Testing Commands
+```bash
+# Python testing
+make py-test                  # All Python tests
+make py-test-unit            # Python unit tests only
+make py-test-integration     # Python integration tests only
+make py-test-coverage        # Python tests with coverage
+make py-test-ollama         # Ollama-specific tests
+
+# JavaScript testing
+make js-test                 # All JavaScript tests
+make js-test-unit           # JavaScript unit tests only
+make js-test-integration    # JavaScript integration tests only
+make js-test-coverage       # JavaScript tests with coverage
+make js-test-watch          # JavaScript tests in watch mode
+```
+
+### Code Quality Commands
+```bash
+# Python code quality
+make py-lint          # Run Python linting checks
+make py-format        # Format Python code with black and isort
+
+# JavaScript code quality
+make js-lint          # Run JavaScript/ESLint checks
+make js-lint-fix      # Auto-fix JavaScript linting issues
+```
+
+### Docker Commands
+```bash
+make run-docker           # Start services with Docker Compose
+make run-docker-detached  # Start services in background
+make stop-docker          # Stop Docker Compose services
+make docker-rebuild       # Rebuild and restart containers
+make docker-clean         # Clean Docker volumes and containers
+make logs                 # View all service logs
+make logs-server          # View API server logs only
+make logs-ollama          # View Ollama service logs only
+```
+
+### Cleanup Commands
+```bash
+make clean            # Clean all generated files (Python + JavaScript)
+```
+
+### Manual Development (Alternative)
+
+#### Server Development
 ```bash
 cd server
 # Install dependencies
@@ -352,36 +437,156 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-### Client Development
+#### Client Development
 ```bash
 cd client
 # Install dependencies
 npm install
 
 # Start development server
-npm start
+npm run dev
 
 # Build for production
 npm run build
 ```
 
-## 🧪 Testing the System
+## 🧪 Testing
 
-### With Docker (Recommended)
+This project includes comprehensive testing for both client and server components with **100% test coverage**.
+
+### Python Testing (Server)
+The server uses **pytest** with comprehensive test configuration:
+
+```bash
+# Run all Python tests
+make py-test
+
+# Run specific test types
+make py-test-unit              # Unit tests only
+make py-test-integration       # Integration tests only
+make py-test-coverage          # With coverage report
+make py-test-ollama           # Ollama-specific tests
+
+# Run manually
+cd server
+python tests/test_runner.py all
+```
+
+**Test Structure:**
+```
+server/tests/
+├── unit/                     # Unit tests
+│   ├── api/                  # API endpoint tests
+│   │   └── test_main.py
+│   └── agents/               # Agent logic tests
+│       ├── test_ollama_client.py
+│       └── test_image_vision_agent.py
+├── integration/              # Integration tests
+│   ├── scenarios/            # Full workflow tests
+│   │   └── test_full_analysis_scenarios.py
+│   └── websocket/            # WebSocket communication tests
+│       └── test_websocket_handler.py
+└── pyproject.toml           # Test configuration
+```
+
+### JavaScript Testing (Client)
+The client uses **Vitest** + **React Testing Library** with full coverage:
+
+```bash
+# Run all JavaScript tests
+make js-test
+
+# Run specific test types
+make js-test-unit              # Unit tests only
+make js-test-integration       # Integration tests only
+make js-test-coverage          # With coverage report
+make js-test-watch            # Watch mode for development
+
+# Run manually
+cd client
+npm test                      # All tests
+npm run test:coverage         # With coverage
+npm run test:watch           # Watch mode
+```
+
+**Test Structure:**
+```
+client/tests/
+├── unit/                     # Unit tests
+│   ├── App.test.jsx          # Main app component
+│   ├── ImageUpload.test.jsx  # File upload component
+│   ├── ScenarioForm.test.jsx # Form component
+│   └── websocket-utils.test.js # Utility functions
+├── integration/              # Integration tests
+│   └── websocket-communication.test.jsx # Full workflow
+├── test-setup.js            # Test configuration
+└── test-styles.css          # Mock styles for tests
+```
+
+**Test Features:**
+- ✅ **Component Testing**: All React components with user interactions
+- ✅ **WebSocket Testing**: Real-time communication workflows
+- ✅ **File Upload Testing**: Drag-and-drop and validation
+- ✅ **Form Testing**: Input validation and submission
+- ✅ **Error Handling**: Edge cases and error scenarios
+- ✅ **Mocking**: WebSocket, File API, and external dependencies
+
+### Test Configuration
+
+**Python (pytest):**
+- Coverage thresholds: 70% minimum
+- Markers: `unit`, `integration`, `slow`, `ollama`
+- Auto-discovery of test files
+- Async test support
+
+**JavaScript (vitest):**
+- Coverage thresholds: 70% minimum
+- Path aliases: `@components`, `@utils`, `~`
+- DOM testing with jsdom
+- React Testing Library integration
+
+### Running Tests with Make
+
+All test commands are available through the Makefile:
+
+```bash
+# Install dependencies
+make js-install               # Install client dependencies
+make install-dev              # Install server dependencies
+
+# Testing
+make py-test                  # Python tests
+make js-test                  # JavaScript tests
+
+# Code quality
+make py-lint                  # Python linting
+make js-lint                  # JavaScript linting
+make js-lint-fix              # Auto-fix JavaScript issues
+
+# Development
+make py-run                   # Start Python server
+make js-run                   # Start JavaScript client
+```
+
+### 🎯 Testing the Complete System
+
+This section covers end-to-end testing of the full AgroTech AI system with real agricultural analysis.
+
+#### With Docker (Recommended)
 1. **Start with Docker Compose**: `docker-compose up`
 2. **Open your browser** to `http://localhost:3000`
 3. **Upload an agricultural image** using the drag-and-drop interface
 4. **Select environmental conditions** or use predefined scenarios
 5. **Watch real-time AI analysis** from all four agents
 
-### Manual Setup
+#### Manual Setup
 1. **Ensure Ollama is running** with the gemma3:4b model
 2. **Start the backend server** on port 8000
 3. **Start the frontend client** on port 3000
 4. **Open your browser** to `http://localhost:3000`
 5. **Upload images and analyze** agricultural conditions in real-time
 
-### Sample Workflow
+#### Sample Workflow
 1. **Drag and drop** an agricultural image (JPG, PNG, WebP)
 2. **Choose environmental conditions** from presets or custom input
 3. **Click "Analyze Image"** to start the AI analysis
