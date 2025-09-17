@@ -1,11 +1,12 @@
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-import json
-from ollama_client import (
+
+from agrotech_ai.ollama_client import (
     OllamaAgent,
+    check_ollama_connection,
     get_shared_session,
     reset_shared_session,
-    check_ollama_connection
 )
 
 
@@ -80,9 +81,9 @@ class TestOllamaAgent:
         agent = OllamaAgent("TestAgent", "testing")
         invalid_json = '{"key": "incomplete",}'
 
-        with patch.object(agent, '_find_and_fix_json') as mock_fix:
+        with patch.object(agent, "_find_and_fix_json") as mock_fix:
             mock_fix.return_value = {"fixed": "json"}
-            result = agent._parse_json_response(invalid_json)
+            agent._parse_json_response(invalid_json)
             mock_fix.assert_called_once()
 
     def test_fix_incomplete_json_missing_quote(self):
@@ -99,7 +100,7 @@ class TestOllamaAgent:
         agent = OllamaAgent("TestAgent", "testing")
         partial = '{"confidence": 0.8, "key":'
 
-        with patch('re.search') as mock_search:
+        with patch("re.search") as mock_search:
             mock_search.return_value = Mock()
             mock_search.return_value.group.return_value = "0.8"
             result = agent._create_partial_response(partial)
@@ -143,7 +144,7 @@ class TestSessionManagement:
 class TestOllamaConnection:
     """Test cases for Ollama connection checking."""
 
-    @patch('ollama_client.requests.get')
+    @patch("agrotech_ai.ollama_client.requests.get")
     def test_check_ollama_connection_success(self, mock_get):
         """Test successful Ollama connection check."""
         mock_response = Mock()
@@ -158,7 +159,7 @@ class TestOllamaConnection:
         assert "/api/tags" in call_args[0][0]
         assert call_args[1]["timeout"] == 5
 
-    @patch('ollama_client.requests.get')
+    @patch("agrotech_ai.ollama_client.requests.get")
     def test_check_ollama_connection_failure(self, mock_get):
         """Test failed Ollama connection check."""
         mock_response = Mock()
@@ -170,10 +171,11 @@ class TestOllamaConnection:
         assert result is False
         mock_get.assert_called_once()
 
-    @patch('ollama_client.requests.get')
+    @patch("agrotech_ai.ollama_client.requests.get")
     def test_check_ollama_connection_timeout(self, mock_get):
         """Test Ollama connection check with timeout."""
         import requests
+
         mock_get.side_effect = requests.exceptions.Timeout("Connection timeout")
 
         result = check_ollama_connection()
@@ -181,10 +183,11 @@ class TestOllamaConnection:
         assert result is False
         mock_get.assert_called_once()
 
-    @patch('ollama_client.requests.get')
+    @patch("agrotech_ai.ollama_client.requests.get")
     def test_check_ollama_connection_connection_error(self, mock_get):
         """Test Ollama connection check with connection error."""
         import requests
+
         mock_get.side_effect = requests.exceptions.ConnectionError("Connection refused")
 
         result = check_ollama_connection()
@@ -192,10 +195,11 @@ class TestOllamaConnection:
         assert result is False
         mock_get.assert_called_once()
 
-    @patch('ollama_client.requests.get')
+    @patch("agrotech_ai.ollama_client.requests.get")
     def test_check_ollama_connection_generic_request_error(self, mock_get):
         """Test Ollama connection check with generic request error."""
         import requests
+
         mock_get.side_effect = requests.exceptions.RequestException("Generic error")
 
         result = check_ollama_connection()
@@ -268,7 +272,7 @@ class TestFindAndFixJson:
         agent = OllamaAgent("TestAgent", "testing")
         text_blob = 'Some text {"key": "value", "incomplete'
 
-        with patch.object(agent, '_fix_incomplete_json') as mock_fix:
+        with patch.object(agent, "_fix_incomplete_json") as mock_fix:
             mock_fix.return_value = {"key": "value", "fixed": True}
             result = agent._find_and_fix_json(text_blob)
 
@@ -280,7 +284,7 @@ class TestFindAndFixJson:
         agent = OllamaAgent("TestAgent", "testing")
         text_blob = 'Some text ["item1", "item2"'
 
-        with patch.object(agent, '_fix_incomplete_json') as mock_fix:
+        with patch.object(agent, "_fix_incomplete_json") as mock_fix:
             mock_fix.return_value = ["item1", "item2"]
             result = agent._find_and_fix_json(text_blob)
 
@@ -290,9 +294,9 @@ class TestFindAndFixJson:
     def test_find_and_fix_json_no_json_found(self):
         """Test _find_and_fix_json when no JSON structure is found."""
         agent = OllamaAgent("TestAgent", "testing")
-        text_blob = 'Just some plain text without any JSON structures'
+        text_blob = "Just some plain text without any JSON structures"
 
-        with patch.object(agent, '_create_partial_response') as mock_partial:
+        with patch.object(agent, "_create_partial_response") as mock_partial:
             mock_partial.return_value = {"error": "no JSON found"}
             result = agent._find_and_fix_json(text_blob)
 
@@ -302,13 +306,13 @@ class TestFindAndFixJson:
     def test_find_and_fix_json_empty_text(self):
         """Test _find_and_fix_json with empty text."""
         agent = OllamaAgent("TestAgent", "testing")
-        text_blob = ''
+        text_blob = ""
 
-        with patch.object(agent, '_create_partial_response') as mock_partial:
+        with patch.object(agent, "_create_partial_response") as mock_partial:
             mock_partial.return_value = {"error": "empty text"}
             result = agent._find_and_fix_json(text_blob)
 
-            mock_partial.assert_called_once_with('')
+            mock_partial.assert_called_once_with("")
             assert result == {"error": "empty text"}
 
     def test_find_and_fix_json_nested_structures(self):

@@ -1,7 +1,8 @@
-import pytest
 from unittest.mock import Mock, patch
-import json
-from agents import AgriVisionAgent, SoilSenseAgent, CropMasterAgent
+
+import pytest
+
+from agrotech_ai.agents import AgriVisionAgent, CropMasterAgent, SoilSenseAgent
 
 
 class TestAgriVisionAgent:
@@ -32,15 +33,17 @@ class TestAgriVisionAgent:
             }"""
         }
 
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.return_value = Mock()
             mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = mock_response
 
-            result = await agent.analyze_image("Healthy tomato plants with green leaves")
+            result = await agent.analyze_image(
+                "Healthy tomato plants with green leaves"
+            )
 
             assert result["crop_health"] == "healthy"
-            assert result["pest_detected"] == False
+            assert result["pest_detected"] is False
             assert result["leaf_condition"] == "excellent"
             assert result["confidence"] == 0.9
 
@@ -59,7 +62,7 @@ class TestAgriVisionAgent:
             }"""
         }
 
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.return_value = Mock()
             mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = mock_response
@@ -67,7 +70,7 @@ class TestAgriVisionAgent:
             result = await agent.analyze_image("Plants with yellowing leaves and spots")
 
             assert result["crop_health"] == "diseased"
-            assert result["pest_detected"] == True
+            assert result["pest_detected"] is True
             assert result["leaf_condition"] == "poor"
             assert result["disease_probability"] == 0.8
 
@@ -76,8 +79,13 @@ class TestAgriVisionAgent:
         result = agent._get_fallback_response()
 
         expected_keys = [
-            "crop_health", "pest_detected", "leaf_condition",
-            "disease_probability", "visual_symptoms", "recommendations", "confidence"
+            "crop_health",
+            "pest_detected",
+            "leaf_condition",
+            "disease_probability",
+            "visual_symptoms",
+            "recommendations",
+            "confidence",
         ]
 
         for key in expected_keys:
@@ -117,7 +125,7 @@ class TestSoilSenseAgent:
             }"""
         }
 
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.return_value = Mock()
             mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = mock_response
@@ -127,7 +135,7 @@ class TestSoilSenseAgent:
 
             assert result["soil_moisture"] == 70
             assert result["ph_level"] == 6.5
-            assert result["irrigation_needed"] == False
+            assert result["irrigation_needed"] is False
             assert result["environmental_stress"] == "low"
 
     @pytest.mark.asyncio
@@ -147,7 +155,7 @@ class TestSoilSenseAgent:
             }"""
         }
 
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.return_value = Mock()
             mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = mock_response
@@ -157,7 +165,7 @@ class TestSoilSenseAgent:
 
             assert result["soil_moisture"] == 25
             assert result["ph_level"] == 8.2
-            assert result["irrigation_needed"] == True
+            assert result["irrigation_needed"] is True
             assert result["environmental_stress"] == "high"
             assert len(result["alerts"]) == 3
 
@@ -166,9 +174,15 @@ class TestSoilSenseAgent:
         result = agent._get_fallback_response()
 
         expected_keys = [
-            "soil_moisture", "ph_level", "temperature", "humidity",
-            "irrigation_needed", "fertilizer_status", "environmental_stress",
-            "alerts", "confidence"
+            "soil_moisture",
+            "ph_level",
+            "temperature",
+            "humidity",
+            "irrigation_needed",
+            "fertilizer_status",
+            "environmental_stress",
+            "alerts",
+            "confidence",
         ]
 
         for key in expected_keys:
@@ -192,7 +206,9 @@ class TestCropMasterAgent:
         assert agent.expertise == "toma de decisiones agrícolas integrales"
 
     @pytest.mark.asyncio
-    async def test_make_decision_healthy_scenario(self, agent, sample_vision_result, sample_soil_result):
+    async def test_make_decision_healthy_scenario(
+        self, agent, sample_vision_result, sample_soil_result
+    ):
         """Test decision making for healthy scenario."""
         mock_response = {
             "response": """{
@@ -207,7 +223,7 @@ class TestCropMasterAgent:
             }"""
         }
 
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.return_value = Mock()
             mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = mock_response
@@ -228,7 +244,7 @@ class TestCropMasterAgent:
             "pest_detected": True,
             "leaf_condition": "poor",
             "disease_probability": 0.9,
-            "confidence": 0.85
+            "confidence": 0.85,
         }
 
         soil_data = {
@@ -236,13 +252,17 @@ class TestCropMasterAgent:
             "irrigation_needed": True,
             "environmental_stress": "high",
             "alerts": ["sequía severa"],
-            "confidence": 0.8
+            "confidence": 0.8,
         }
 
         mock_response = {
             "response": """{
                 "overall_status": "critical",
-                "priority_actions": ["riego inmediato", "aplicar pesticida", "consultar especialista"],
+                "priority_actions": [
+                    "riego inmediato",
+                    "aplicar pesticida",
+                    "consultar especialista"
+                ],
                 "estimated_yield": "low",
                 "risk_assessment": "critical",
                 "next_inspection_hours": 6,
@@ -252,7 +272,7 @@ class TestCropMasterAgent:
             }"""
         }
 
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.return_value = Mock()
             mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = mock_response
@@ -271,7 +291,7 @@ class TestCropMasterAgent:
         vision_data = {}
         soil_data = {}
 
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.side_effect = Exception("Connection error")
 
             result = await agent.make_decision(vision_data, soil_data)
@@ -285,9 +305,14 @@ class TestCropMasterAgent:
         result = agent._get_fallback_response()
 
         expected_keys = [
-            "overall_status", "priority_actions", "estimated_yield",
-            "risk_assessment", "next_inspection_hours", "economic_impact",
-            "urgent_alerts", "confidence"
+            "overall_status",
+            "priority_actions",
+            "estimated_yield",
+            "risk_assessment",
+            "next_inspection_hours",
+            "economic_impact",
+            "urgent_alerts",
+            "confidence",
         ]
 
         for key in expected_keys:

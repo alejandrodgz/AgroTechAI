@@ -1,9 +1,11 @@
-import pytest
-from unittest.mock import Mock, patch, AsyncMock
 import base64
 import io
+from unittest.mock import Mock, patch
+
+import pytest
 from PIL import Image
-from agents import ImageVisionAgent
+
+from agrotech_ai.agents import ImageVisionAgent
 
 
 class TestImageVisionAgent:
@@ -22,10 +24,10 @@ class TestImageVisionAgent:
     def test_optimize_image_resize(self, agent, sample_base64_image):
         """Test image optimization with resizing."""
         # Create a larger test image
-        large_image = Image.new('RGB', (2048, 1536), color='green')
+        large_image = Image.new("RGB", (2048, 1536), color="green")
         buffer = io.BytesIO()
-        large_image.save(buffer, format='JPEG')
-        large_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        large_image.save(buffer, format="JPEG")
+        large_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
         optimized = agent._optimize_image(large_base64)
 
@@ -62,7 +64,7 @@ class TestImageVisionAgent:
             }"""
         }
 
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.return_value = Mock()
             mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = mock_response
@@ -89,7 +91,7 @@ class TestImageVisionAgent:
             }"""
         }
 
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.return_value = Mock()
             mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = mock_response
@@ -97,12 +99,12 @@ class TestImageVisionAgent:
             result = await agent.analyze_image(sample_base64_image)
 
             assert isinstance(result, dict)
-            assert result.get("is_agricultural_image") == False
+            assert result.get("is_agricultural_image") is False
 
     @pytest.mark.asyncio
     async def test_analyze_image_timeout(self, agent, sample_base64_image):
         """Test image analysis with timeout."""
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.side_effect = Exception("timeout")
 
             result = await agent.analyze_image(sample_base64_image)
@@ -116,7 +118,7 @@ class TestImageVisionAgent:
         """Test image analysis with invalid JSON response."""
         mock_response = {"response": "Invalid JSON response"}
 
-        with patch.object(agent.session, 'post') as mock_post:
+        with patch.object(agent.session, "post") as mock_post:
             mock_post.return_value = Mock()
             mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = mock_response
@@ -136,7 +138,7 @@ class TestImageVisionAgent:
             "environmental_context",
             "plant_health_indicators",
             "recommended_focus_areas",
-            "confidence"
+            "confidence",
         ]
 
         for key in expected_keys:

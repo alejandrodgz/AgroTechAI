@@ -1,7 +1,9 @@
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import patch, Mock
 from fastapi.testclient import TestClient
-from main import app
+
+from agrotech_ai.app import app
 
 
 class TestMainAPI:
@@ -25,7 +27,7 @@ class TestMainAPI:
         assert "endpoints" in data
         assert data["version"] == "1.0.0"
 
-    @patch('main.check_ollama_connection')
+    @patch("agrotech_ai.app.check_ollama_connection")
     def test_health_check_healthy(self, mock_check, client):
         """Test health check endpoint when Ollama is running."""
         mock_check.return_value = True
@@ -39,7 +41,7 @@ class TestMainAPI:
         assert data["ollama"] == "running"
         assert "model" in data
 
-    @patch('main.check_ollama_connection')
+    @patch("agrotech_ai.app.check_ollama_connection")
     def test_health_check_unhealthy(self, mock_check, client):
         """Test health check endpoint when Ollama is not running."""
         mock_check.return_value = False
@@ -62,13 +64,17 @@ class TestMainAPI:
         response = client.options("/")
 
         # CORS headers should be present
-        assert "access-control-allow-origin" in response.headers or response.status_code == 200
+        assert (
+            "access-control-allow-origin" in response.headers
+            or response.status_code == 200
+        )
 
     def test_logging_setup(self):
         """Test that logging is set up on import."""
         # Since main module is already imported, we need to check if setup_logging
         # was called by verifying the logging configuration exists
         import logging
+
         logger = logging.getLogger()
 
         # Check that logger has been configured (has handlers)
@@ -76,24 +82,26 @@ class TestMainAPI:
 
         # Check that we have both console and file handlers
         handler_types = [type(handler).__name__ for handler in logger.handlers]
-        assert 'StreamHandler' in handler_types
-        assert 'FileHandler' in handler_types
+        assert "StreamHandler" in handler_types
+        assert "FileHandler" in handler_types
 
 
 class TestLoggingSetup:
     """Test cases for logging setup."""
 
-    @patch('logging.getLogger')
-    @patch('logging.StreamHandler')
-    @patch('logging.FileHandler')
-    def test_setup_logging_configuration(self, mock_file_handler, mock_stream_handler, mock_get_logger):
+    @patch("logging.getLogger")
+    @patch("logging.StreamHandler")
+    @patch("logging.FileHandler")
+    def test_setup_logging_configuration(
+        self, mock_file_handler, mock_stream_handler, mock_get_logger
+    ):
         """Test logging configuration setup."""
-        from main import setup_logging
+        from agrotech_ai.app import setup_logging
 
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
 
-        logger = setup_logging()
+        setup_logging()
 
         # Verify logger configuration
         mock_logger.setLevel.assert_called()
@@ -101,12 +109,11 @@ class TestLoggingSetup:
 
         # Verify handlers are created
         mock_stream_handler.assert_called()
-        mock_file_handler.assert_called_with('agrotech.log')
+        mock_file_handler.assert_called_with("agrotech.log")
 
     def test_log_file_creation(self):
         """Test that log file is created with proper name."""
-        from main import setup_logging
-        import os
+        from agrotech_ai.app import setup_logging
 
         # Setup logging should create agrotech.log
         setup_logging()

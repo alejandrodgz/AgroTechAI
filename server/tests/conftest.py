@@ -1,19 +1,18 @@
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock
-from httpx import AsyncClient
+from unittest.mock import AsyncMock, Mock
+
+import pytest
 from fastapi.testclient import TestClient
-from main import app
-from agents import (
-    ImageVisionAgent,
+from httpx import AsyncClient
+
+from agrotech_ai.agents import (
     AgriVisionAgent,
-    SoilSenseAgent,
     CropMasterAgent,
+    ImageVisionAgent,
+    SoilSenseAgent,
 )
-from ollama_client import (
-    get_shared_session,
-    reset_shared_session
-)
+from agrotech_ai.app import app
+from agrotech_ai.ollama_client import reset_shared_session
 
 
 @pytest.fixture(scope="session")
@@ -44,7 +43,7 @@ def mock_ollama_response():
     return {
         "response": '{"test": "data", "confidence": 0.85}',
         "done": True,
-        "created_at": "2024-01-01T00:00:00Z"
+        "created_at": "2024-01-01T00:00:00Z",
     }
 
 
@@ -65,7 +64,8 @@ def sample_base64_image():
     """Sample base64 encoded image data for testing."""
     # This is a minimal 1x1 PNG image in base64
     return (
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
+        "+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
     )
 
 
@@ -110,7 +110,7 @@ def sample_image_analysis():
         "environmental_context": "Good lighting, outdoor growth",
         "plant_health_indicators": "No visible disease signs",
         "recommended_focus_areas": ["leaf_health", "soil_moisture"],
-        "confidence": 0.92
+        "confidence": 0.92,
     }
 
 
@@ -124,7 +124,7 @@ def sample_vision_result():
         "disease_probability": 0.1,
         "visual_symptoms": ["green leaves", "no spots"],
         "recommendations": ["continue monitoring"],
-        "confidence": 0.88
+        "confidence": 0.88,
     }
 
 
@@ -140,7 +140,7 @@ def sample_soil_result():
         "fertilizer_status": "adequate",
         "environmental_stress": "low",
         "alerts": [],
-        "confidence": 0.85
+        "confidence": 0.85,
     }
 
 

@@ -1,7 +1,14 @@
-import pytest
-from unittest.mock import Mock, patch, AsyncMock
 import asyncio
-from agents import ImageVisionAgent, AgriVisionAgent, SoilSenseAgent, CropMasterAgent
+from unittest.mock import patch
+
+import pytest
+
+from agrotech_ai.agents import (
+    AgriVisionAgent,
+    CropMasterAgent,
+    ImageVisionAgent,
+    SoilSenseAgent,
+)
 
 
 class TestFullAnalysisScenarios:
@@ -11,10 +18,10 @@ class TestFullAnalysisScenarios:
     def agents(self):
         """Create all agent instances."""
         return {
-            'image_vision': ImageVisionAgent(),
-            'agri_vision': AgriVisionAgent(),
-            'soil_sense': SoilSenseAgent(),
-            'crop_master': CropMasterAgent()
+            "image_vision": ImageVisionAgent(),
+            "agri_vision": AgriVisionAgent(),
+            "soil_sense": SoilSenseAgent(),
+            "crop_master": CropMasterAgent(),
         }
 
     @pytest.mark.integration
@@ -28,7 +35,7 @@ class TestFullAnalysisScenarios:
             "environmental_context": "Buena iluminación natural",
             "plant_health_indicators": "Sin signos de enfermedad",
             "recommended_focus_areas": ["salud_hojas", "humedad_suelo"],
-            "confidence": 0.92
+            "confidence": 0.92,
         }
 
         vision_result = {
@@ -38,7 +45,7 @@ class TestFullAnalysisScenarios:
             "disease_probability": 0.1,
             "visual_symptoms": ["hojas verdes", "sin manchas"],
             "recommendations": ["continuar monitoreo"],
-            "confidence": 0.88
+            "confidence": 0.88,
         }
 
         soil_result = {
@@ -50,7 +57,7 @@ class TestFullAnalysisScenarios:
             "fertilizer_status": "adequate",
             "environmental_stress": "low",
             "alerts": [],
-            "confidence": 0.85
+            "confidence": 0.85,
         }
 
         final_decision = {
@@ -61,25 +68,35 @@ class TestFullAnalysisScenarios:
             "next_inspection_hours": 48,
             "economic_impact": "positive",
             "urgent_alerts": [],
-            "confidence": 0.89
+            "confidence": 0.89,
         }
 
         # Mock all agent methods
-        with patch.object(agents['image_vision'], 'analyze_image', return_value=image_analysis), \
-             patch.object(agents['agri_vision'], 'analyze_image', return_value=vision_result), \
-             patch.object(agents['soil_sense'], 'analyze_environment', return_value=soil_result), \
-             patch.object(agents['crop_master'], 'make_decision', return_value=final_decision):
+        with (
+            patch.object(
+                agents["image_vision"], "analyze_image", return_value=image_analysis
+            ),
+            patch.object(
+                agents["agri_vision"], "analyze_image", return_value=vision_result
+            ),
+            patch.object(
+                agents["soil_sense"], "analyze_environment", return_value=soil_result
+            ),
+            patch.object(
+                agents["crop_master"], "make_decision", return_value=final_decision
+            ),
+        ):
 
             # Step 1: Image analysis
-            img_result = await agents['image_vision'].analyze_image(sample_base64_image)
+            img_result = await agents["image_vision"].analyze_image(sample_base64_image)
             assert img_result["confidence"] > 0.8
 
             # Step 2: Parallel crop and soil analysis
             image_desc = img_result["image_description"]
             env_conditions = "Condiciones ambientales favorables"
 
-            vision_task = agents['agri_vision'].analyze_image(image_desc)
-            soil_task = agents['soil_sense'].analyze_environment(env_conditions)
+            vision_task = agents["agri_vision"].analyze_image(image_desc)
+            soil_task = agents["soil_sense"].analyze_environment(env_conditions)
 
             crop_result, soil_result = await asyncio.gather(vision_task, soil_task)
 
@@ -87,7 +104,9 @@ class TestFullAnalysisScenarios:
             assert soil_result["environmental_stress"] == "low"
 
             # Step 3: Final decision
-            decision = await agents['crop_master'].make_decision(crop_result, soil_result)
+            decision = await agents["crop_master"].make_decision(
+                crop_result, soil_result
+            )
 
             assert decision["overall_status"] == "good"
             assert decision["risk_assessment"] == "low"
@@ -104,7 +123,7 @@ class TestFullAnalysisScenarios:
             "environmental_context": "Condiciones de estrés visible",
             "plant_health_indicators": "Signos de enfermedad fúngica",
             "recommended_focus_areas": ["enfermedad_hojas", "estrés_hídrico"],
-            "confidence": 0.87
+            "confidence": 0.87,
         }
 
         vision_result = {
@@ -114,7 +133,7 @@ class TestFullAnalysisScenarios:
             "disease_probability": 0.8,
             "visual_symptoms": ["hojas amarillas", "manchas marrones"],
             "recommendations": ["aplicar fungicida", "mejorar riego"],
-            "confidence": 0.85
+            "confidence": 0.85,
         }
 
         soil_result = {
@@ -126,7 +145,7 @@ class TestFullAnalysisScenarios:
             "fertilizer_status": "deficient",
             "environmental_stress": "high",
             "alerts": ["sequía severa", "pH elevado"],
-            "confidence": 0.82
+            "confidence": 0.82,
         }
 
         final_decision = {
@@ -137,28 +156,44 @@ class TestFullAnalysisScenarios:
             "next_inspection_hours": 12,
             "economic_impact": "negative",
             "urgent_alerts": ["riesgo de pérdida de cultivo"],
-            "confidence": 0.86
+            "confidence": 0.86,
         }
 
         # Mock all agent methods
-        with patch.object(agents['image_vision'], 'analyze_image', return_value=image_analysis), \
-             patch.object(agents['agri_vision'], 'analyze_image', return_value=vision_result), \
-             patch.object(agents['soil_sense'], 'analyze_environment', return_value=soil_result), \
-             patch.object(agents['crop_master'], 'make_decision', return_value=final_decision):
+        with (
+            patch.object(
+                agents["image_vision"], "analyze_image", return_value=image_analysis
+            ),
+            patch.object(
+                agents["agri_vision"], "analyze_image", return_value=vision_result
+            ),
+            patch.object(
+                agents["soil_sense"], "analyze_environment", return_value=soil_result
+            ),
+            patch.object(
+                agents["crop_master"], "make_decision", return_value=final_decision
+            ),
+        ):
 
             # Complete flow
-            img_result = await agents['image_vision'].analyze_image(sample_base64_image)
+            img_result = await agents["image_vision"].analyze_image(sample_base64_image)
 
             # Parallel processing
-            vision_task = agents['agri_vision'].analyze_image(img_result["image_description"])
-            soil_task = agents['soil_sense'].analyze_environment("Condiciones de estrés")
+            vision_task = agents["agri_vision"].analyze_image(
+                img_result["image_description"]
+            )
+            soil_task = agents["soil_sense"].analyze_environment(
+                "Condiciones de estrés"
+            )
 
             crop_result, soil_result = await asyncio.gather(vision_task, soil_task)
-            decision = await agents['crop_master'].make_decision(crop_result, soil_result)
+            decision = await agents["crop_master"].make_decision(
+                crop_result, soil_result
+            )
 
             # Assertions for diseased scenario
             assert crop_result["crop_health"] == "diseased"
-            assert crop_result["pest_detected"] == True
+            assert crop_result["pest_detected"] is True
             assert soil_result["environmental_stress"] == "high"
             assert decision["overall_status"] == "warning"
             assert decision["risk_assessment"] == "high"
@@ -174,16 +209,24 @@ class TestFullAnalysisScenarios:
         # Mock fast responses
         quick_response = {"confidence": 0.8, "status": "processed"}
 
-        with patch.object(agents['agri_vision'], 'analyze_image', return_value=quick_response), \
-             patch.object(agents['soil_sense'], 'analyze_environment', return_value=quick_response):
+        with (
+            patch.object(
+                agents["agri_vision"], "analyze_image", return_value=quick_response
+            ),
+            patch.object(
+                agents["soil_sense"], "analyze_environment", return_value=quick_response
+            ),
+        ):
 
             start_time = time.time()
 
             # Run multiple concurrent analyses
             tasks = []
             for i in range(5):
-                vision_task = agents['agri_vision'].analyze_image(f"test image {i}")
-                soil_task = agents['soil_sense'].analyze_environment(f"test environment {i}")
+                vision_task = agents["agri_vision"].analyze_image(f"test image {i}")
+                soil_task = agents["soil_sense"].analyze_environment(
+                    f"test environment {i}"
+                )
                 tasks.extend([vision_task, soil_task])
 
             results = await asyncio.gather(*tasks)
@@ -199,25 +242,34 @@ class TestFullAnalysisScenarios:
     async def test_error_recovery_scenario(self, agents, sample_base64_image):
         """Test error recovery in analysis pipeline."""
         # First agent succeeds, second fails, third recovers
-        image_analysis = {
-            "image_description": "Partial analysis",
-            "confidence": 0.6
-        }
+        image_analysis = {"image_description": "Partial analysis", "confidence": 0.6}
 
-        with patch.object(agents['image_vision'], 'analyze_image', return_value=image_analysis), \
-             patch.object(agents['agri_vision'], 'generate_response', side_effect=Exception("Vision error")), \
-             patch.object(agents['soil_sense'], 'analyze_environment', return_value={"confidence": 0.7}):
+        with (
+            patch.object(
+                agents["image_vision"], "analyze_image", return_value=image_analysis
+            ),
+            patch.object(
+                agents["agri_vision"],
+                "generate_response",
+                side_effect=Exception("Vision error"),
+            ),
+            patch.object(
+                agents["soil_sense"],
+                "analyze_environment",
+                return_value={"confidence": 0.7},
+            ),
+        ):
 
             # Image analysis should succeed
-            img_result = await agents['image_vision'].analyze_image(sample_base64_image)
+            img_result = await agents["image_vision"].analyze_image(sample_base64_image)
             assert img_result["confidence"] == 0.6
 
             # Vision analysis should fail and return fallback
-            crop_result = await agents['agri_vision'].analyze_image("test")
+            crop_result = await agents["agri_vision"].analyze_image("test")
             assert crop_result["confidence"] == 0.0  # Fallback response
 
             # Soil analysis should succeed
-            soil_result = await agents['soil_sense'].analyze_environment("test")
+            soil_result = await agents["soil_sense"].analyze_environment("test")
             assert soil_result["confidence"] == 0.7
 
     @pytest.mark.integration
@@ -230,7 +282,7 @@ class TestFullAnalysisScenarios:
             "soil_visual_indicators": "Suelo arenoso y seco",
             "environmental_context": "Día soleado, temperatura alta",
             "recommended_focus_areas": ["nutrición", "riego"],
-            "confidence": 0.9
+            "confidence": 0.9,
         }
 
         # Track what data is passed between agents
@@ -250,18 +302,32 @@ class TestFullAnalysisScenarios:
             decision_calls.append((vision_data, soil_data))
             return {"overall_status": "warning", "confidence": 0.75}
 
-        with patch.object(agents['image_vision'], 'analyze_image', return_value=image_analysis), \
-             patch.object(agents['agri_vision'], 'analyze_image', side_effect=track_vision), \
-             patch.object(agents['soil_sense'], 'analyze_environment', side_effect=track_soil), \
-             patch.object(agents['crop_master'], 'make_decision', side_effect=track_decision):
+        with (
+            patch.object(
+                agents["image_vision"], "analyze_image", return_value=image_analysis
+            ),
+            patch.object(
+                agents["agri_vision"], "analyze_image", side_effect=track_vision
+            ),
+            patch.object(
+                agents["soil_sense"], "analyze_environment", side_effect=track_soil
+            ),
+            patch.object(
+                agents["crop_master"], "make_decision", side_effect=track_decision
+            ),
+        ):
 
             # Complete analysis flow
-            img_result = await agents['image_vision'].analyze_image(sample_base64_image)
+            img_result = await agents["image_vision"].analyze_image(sample_base64_image)
 
-            vision_result = await agents['agri_vision'].analyze_image(img_result["image_description"])
-            soil_result = await agents['soil_sense'].analyze_environment("Test environment")
+            vision_result = await agents["agri_vision"].analyze_image(
+                img_result["image_description"]
+            )
+            soil_result = await agents["soil_sense"].analyze_environment(
+                "Test environment"
+            )
 
-            final_decision = await agents['crop_master'].make_decision(vision_result, soil_result)
+            await agents["crop_master"].make_decision(vision_result, soil_result)
 
             # Verify data flow
             assert len(vision_calls) == 1

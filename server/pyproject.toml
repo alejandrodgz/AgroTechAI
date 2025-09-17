@@ -41,6 +41,7 @@ dev = [
     "black>=23.0.0",
     "isort>=5.12.0",
     "flake8>=6.0.0",
+    "flake8-pyproject>=1.2.3",
     "mypy>=1.0.0",
     "pre-commit>=3.0.0",
 ]
@@ -54,11 +55,11 @@ test = [
 ]
 
 [project.scripts]
-agrotech-server = "main:main"
+agrotech-server = "agrotech_ai.app:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["*.py"]
+include = ["agrotech_ai*"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -81,7 +82,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["."]
+source = ["agrotech_ai"]
 omit = [
     "*/tests/*",
     "*/python3.12/*",
@@ -125,8 +126,8 @@ extend-exclude = '''
 profile = "black"
 multi_line_output = 3
 line_length = 88
-known_first_party = ["."]
-skip_glob = ["demo/*"]
+known_first_party = ["agrotech_ai"]
+skip_glob = ["python3.12/*"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -152,7 +153,7 @@ module = [
 ignore_missing_imports = true
 
 [tool.flake8]
-max-line-length = 88
+max-line-length=92
 extend-ignore = ["E203", "W503"]
 exclude = [
     ".git",

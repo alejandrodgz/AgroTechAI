@@ -1,7 +1,8 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
-import json
-from websocket_handler import WebSocketHandler
+
+from agrotech_ai.websocket_handler import WebSocketHandler
 
 
 class TestWebSocketHandler:
@@ -23,8 +24,10 @@ class TestWebSocketHandler:
         return websocket
 
     @pytest.mark.asyncio
-    @patch('websocket_handler.check_ollama_connection')
-    async def test_handle_connection_ollama_not_running(self, mock_check, handler, mock_websocket):
+    @patch("agrotech_ai.websocket_handler.check_ollama_connection")
+    async def test_handle_connection_ollama_not_running(
+        self, mock_check, handler, mock_websocket
+    ):
         """Test WebSocket connection when Ollama is not running."""
         mock_check.return_value = False
 
@@ -38,7 +41,7 @@ class TestWebSocketHandler:
         assert "Ollama" in call_args["message"]
 
     @pytest.mark.asyncio
-    @patch('websocket_handler.check_ollama_connection')
+    @patch("agrotech_ai.websocket_handler.check_ollama_connection")
     async def test_handle_connection_success(self, mock_check, handler, mock_websocket):
         """Test successful WebSocket connection."""
         mock_check.return_value = True
@@ -77,7 +80,7 @@ class TestWebSocketHandler:
         """Test custom scenario with missing required data."""
         message = {
             "type": "custom_scenario",
-            "image_description": "Plants with leaves"
+            "image_description": "Plants with leaves",
             # Missing environment_description
         }
 
@@ -92,7 +95,7 @@ class TestWebSocketHandler:
         """Test image analysis with missing image data."""
         message = {
             "type": "image_analysis",
-            "environment_description": "Good conditions"
+            "environment_description": "Good conditions",
             # Missing image_data
         }
 
@@ -103,32 +106,33 @@ class TestWebSocketHandler:
         assert call_args["type"] == "error"
 
     @pytest.mark.asyncio
-    @patch('websocket_handler.asyncio.sleep', new_callable=AsyncMock)
-    async def test_analyze_scenario_complete_flow(self, mock_sleep, handler, mock_websocket):
+    @patch("agrotech_ai.websocket_handler.asyncio.sleep", new_callable=AsyncMock)
+    async def test_analyze_scenario_complete_flow(
+        self, mock_sleep, handler, mock_websocket
+    ):
         """Test complete scenario analysis flow."""
         # Mock agent responses
-        vision_result = {
-            "crop_health": "healthy",
-            "confidence": 0.9
-        }
-        soil_result = {
-            "soil_moisture": 70,
-            "confidence": 0.85
-        }
-        final_decision = {
-            "overall_status": "good",
-            "confidence": 0.88
-        }
+        vision_result = {"crop_health": "healthy", "confidence": 0.9}
+        soil_result = {"soil_moisture": 70, "confidence": 0.85}
+        final_decision = {"overall_status": "good", "confidence": 0.88}
 
-        with patch.object(handler.agri_vision, 'analyze_image', return_value=vision_result), \
-             patch.object(handler.soil_sense, 'analyze_environment', return_value=soil_result), \
-             patch.object(handler.crop_master, 'make_decision', return_value=final_decision):
+        with (
+            patch.object(
+                handler.agri_vision, "analyze_image", return_value=vision_result
+            ),
+            patch.object(
+                handler.soil_sense, "analyze_environment", return_value=soil_result
+            ),
+            patch.object(
+                handler.crop_master, "make_decision", return_value=final_decision
+            ),
+        ):
 
             await handler.analyze_scenario(
                 mock_websocket,
                 "Healthy plants",
                 "Good soil conditions",
-                "Test Scenario"
+                "Test Scenario",
             )
 
             # Verify multiple send_json calls were made
@@ -140,8 +144,10 @@ class TestWebSocketHandler:
             assert "completado" in final_call["message"]
 
     @pytest.mark.asyncio
-    @patch('websocket_handler.asyncio.sleep', new_callable=AsyncMock)
-    async def test_analyze_image_scenario_complete_flow(self, mock_sleep, handler, mock_websocket, sample_base64_image):
+    @patch("agrotech_ai.websocket_handler.asyncio.sleep", new_callable=AsyncMock)
+    async def test_analyze_image_scenario_complete_flow(
+        self, mock_sleep, handler, mock_websocket, sample_base64_image
+    ):
         """Test complete image analysis scenario flow."""
         # Mock agent responses
         image_analysis = {
@@ -150,55 +156,60 @@ class TestWebSocketHandler:
             "environmental_context": "Good lighting",
             "plant_health_indicators": "Green leaves",
             "recommended_focus_areas": ["leaves", "soil"],
-            "confidence": 0.92
+            "confidence": 0.92,
         }
 
-        vision_result = {
-            "crop_health": "healthy",
-            "confidence": 0.9
-        }
+        vision_result = {"crop_health": "healthy", "confidence": 0.9}
 
-        soil_result = {
-            "soil_moisture": 70,
-            "confidence": 0.85
-        }
+        soil_result = {"soil_moisture": 70, "confidence": 0.85}
 
-        final_decision = {
-            "overall_status": "good",
-            "confidence": 0.88
-        }
+        final_decision = {"overall_status": "good", "confidence": 0.88}
 
-        with patch.object(handler.image_vision, 'analyze_image', return_value=image_analysis), \
-             patch.object(handler.agri_vision, 'analyze_image', return_value=vision_result), \
-             patch.object(handler.soil_sense, 'analyze_environment', return_value=soil_result), \
-             patch.object(handler.crop_master, 'make_decision', return_value=final_decision):
+        with (
+            patch.object(
+                handler.image_vision, "analyze_image", return_value=image_analysis
+            ),
+            patch.object(
+                handler.agri_vision, "analyze_image", return_value=vision_result
+            ),
+            patch.object(
+                handler.soil_sense, "analyze_environment", return_value=soil_result
+            ),
+            patch.object(
+                handler.crop_master, "make_decision", return_value=final_decision
+            ),
+        ):
 
             await handler.analyze_image_scenario(
                 mock_websocket,
                 sample_base64_image,
                 "Good environmental conditions",
-                "Image Analysis Test"
+                "Image Analysis Test",
             )
 
             # Verify multiple send_json calls were made
             assert mock_websocket.send_json.call_count >= 6
 
             # Verify ImageVision was called
-            handler.image_vision.analyze_image.assert_called_once_with(sample_base64_image)
+            handler.image_vision.analyze_image.assert_called_once_with(
+                sample_base64_image
+            )
 
     @pytest.mark.asyncio
     async def test_analyze_scenario_agent_error(self, handler, mock_websocket):
         """Test scenario analysis with agent error."""
-        with patch.object(handler.agri_vision, 'analyze_image', side_effect=Exception("Agent error")):
+        with patch.object(
+            handler.agri_vision, "analyze_image", side_effect=Exception("Agent error")
+        ):
 
             await handler.analyze_scenario(
-                mock_websocket,
-                "Test image",
-                "Test environment",
-                "Error Scenario"
+                mock_websocket, "Test image", "Test environment", "Error Scenario"
             )
 
             # Should send error message
-            error_calls = [call for call in mock_websocket.send_json.call_args_list
-                          if call[0][0].get("type") == "error"]
+            error_calls = [
+                call
+                for call in mock_websocket.send_json.call_args_list
+                if call[0][0].get("type") == "error"
+            ]
             assert len(error_calls) > 0
