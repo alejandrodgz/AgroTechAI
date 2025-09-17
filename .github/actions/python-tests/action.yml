@@ -30,7 +30,7 @@ runs:
 
     - name: Install Python dependencies
       shell: bash
-      run: make install-dev
+      run: make py-install-dev
 
     - name: Run Python linting
       shell: bash

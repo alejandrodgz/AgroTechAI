@@ -1,130 +1,120 @@
-.PHONY: help install install-dev test test-unit test-integration test-coverage lint format clean run run-docker js-install js-test js-test-unit js-test-integration js-test-coverage js-test-watch js-lint js-lint-fix js-run
-
-# Default target
+# Help documentation à la https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
 	@echo "AgroTech AI - Available commands:"
 	@echo ""
-	@echo "Setup:"
-	@echo "  install      Install production dependencies"
-	@echo "  install-dev  Install development dependencies"
-	@echo ""
-	@echo "Testing (Python):"
-	@echo "  py-test         Run all Python tests (unit + integration)"
-	@echo "  py-test-unit    Run Python unit tests only"
-	@echo "  py-test-integration  Run Python integration tests only"
-	@echo "  py-test-coverage     Run Python tests with coverage report"
-	@echo ""
-	@echo "Testing (JavaScript):"
-	@echo "  js-test         Run all JavaScript tests (unit + integration)"
-	@echo "  js-test-unit    Run JavaScript unit tests only"
-	@echo "  js-test-integration  Run JavaScript integration tests only"
-	@echo "  js-test-coverage     Run JavaScript tests with coverage report"
-	@echo "  js-test-watch   Run JavaScript tests in watch mode"
-	@echo ""
-	@echo "Code Quality:"
-	@echo "  py-lint         Run Python linting checks"
-	@echo "  py-format       Format Python code with black and isort"
-	@echo "  js-lint         Run JavaScript linting checks"
-	@echo "  js-lint-fix     Run JavaScript linting with auto-fix"
-	@echo ""
-	@echo "Development:"
-	@echo "  py-run       Start Python development server"
-	@echo "  js-run       Start JavaScript development server"
-	@echo "  run-docker   Start services with Docker Compose"
-	@echo "  stop-docker  Stop Docker Compose services"
-	@echo "  logs         View Docker Compose logs"
-	@echo "  clean        Clean up generated files"
+	@cat Makefile | grep -v '\.PHONY' |  grep -v '\help:' | grep -B1 -E '^[a-zA-Z0-9_.-]+:.*' | sed -e "s/:.*//" | sed -e "s/^## //" |  grep -v '\-\-' | sed '1!G;h;$$!d' | awk 'NR%2{printf "\033[36m%-30s\033[0m",$$0;next;}1' | sort
 
-# Installation
-install:
+# Install production dependencies
+py-install:
 	cd server && pip install -e .
 
-install-dev:
+# Install development dependencies
+py-install-dev:
 	cd server && pip install -e ".[dev,test]"
 
+# Install javascript dependencies
 js-install:
 	cd client && npm install
 
-# Testing
+# Run all Python tests (unit + integration)
 py-test:
 	cd server && python tests/test_runner.py all
 
+# Run all Python unit tests
 py-test-unit:
 	cd server && python tests/test_runner.py unit
 
+# Run all Python integration's tests
 py-test-integration:
 	cd server && python tests/test_runner.py integration
 
+# Run Python tests with coverage report
 py-test-coverage:
 	cd server && python tests/test_runner.py coverage
 
+# Run all Python integration's tests with ollama feature
 py-test-ollama:
 	cd server && python tests/test_runner.py ollama
 
-# JavaScript Testing
+# Run all JavaScript tests (unit + integration)
 js-test:
 	cd client && npm test -- --run
 
+# Run JavaScript unit tests only
 js-test-unit:
 	cd client && npm test tests/unit -- --run
 
+# Run JavaScript integration tests only
 js-test-integration:
 	cd client && npm test tests/integration -- --run
 
+# Run JavaScript tests with coverage report
 js-test-coverage:
 	cd client && npm run test:coverage
 
+# Run JavaScript tests in watch mode
 js-test-watch:
 	cd client && npm run test:watch
 
-# Code quality
+# Run Python linting checks
 py-lint:
 	cd server && python tests/test_runner.py lint
 
+# Format Python code with black and isort
 py-format:
 	cd server && python tests/test_runner.py format
 
+# Run JavaScript linting checks
 js-lint:
 	cd client && npm run lint
 
+# Run JavaScript linting with auto-fix
 js-lint-fix:
 	cd client && npm run lint:fix
 
-# Development
+# Start Python development server
 py-run:
 	cd server && uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
+# Start JavaScript development server
 js-run:
 	cd client && npm run dev
 
-run-docker:
+# Start services with Docker Compose (ollama, api, frontend)
+docker-run:
 	docker compose up --build
 
-run-docker-detached:
+# Start services with Docker Compose in detached mode (ollama, api, frontend)
+docker-detached-run:
 	docker compose up --build -d
 
-stop-docker:
+# Stop Docker Compose services
+docker-stop:
 	docker compose down
 
+# View Docker Compose logs
 logs:
 	docker compose logs -f
 
+# View Docker Compose logs for api-server
 logs-server:
 	docker compose logs -f api-server
 
+# View Docker Compose logs for ollama
 logs-ollama:
 	docker compose logs -f ollama
 
-# Docker management
+# Rebuild all docker services
 docker-rebuild:
 	docker compose down
 	docker compose build --no-cache
 	docker compose up
 
+# Delete all docker services
 docker-clean:
 	docker compose down -v
 
-# Cleanup
+# Cleanup in the project
 clean:
 	# Python cleanup
 	find server -type d -name "__pycache__" -exec rm -rf {} +
