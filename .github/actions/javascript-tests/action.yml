@@ -1,0 +1,48 @@
+name: 'JavaScript Tests & Quality'
+description: 'Run JavaScript linting and tests with coverage'
+
+inputs:
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '20.18.3'
+
+outputs:
+  coverage-path:
+    description: 'Path to coverage reports'
+    value: ${{ steps.coverage.outputs.path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+        cache-dependency-path: client/package-lock.json
+
+    - name: Install JavaScript dependencies
+      shell: bash
+      run: make js-install
+
+    - name: Run JavaScript linting
+      shell: bash
+      run: make js-lint
+
+    - name: Run JavaScript unit tests
+      shell: bash
+      run: make js-test-unit
+
+    - name: Run JavaScript integration tests
+      shell: bash
+      run: make js-test-integration
+
+    - name: Run JavaScript tests with coverage
+      shell: bash
+      run: make js-test-coverage
+
+    - name: Set coverage output
+      id: coverage
+      shell: bash
+      run: echo "path=client/coverage/" >> $GITHUB_OUTPUT
