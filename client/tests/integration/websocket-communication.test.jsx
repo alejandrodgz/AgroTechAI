@@ -28,6 +28,7 @@ describe('WebSocket Communication Integration', () => {
   })
 
   it('completes full image analysis workflow', async () => {
+    // eslint-disable-next-line no-unused-vars
     const user = userEvent.setup()
     render(<App />)
 

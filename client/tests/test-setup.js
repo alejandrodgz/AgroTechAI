@@ -20,7 +20,7 @@ global.WebSocket = class MockWebSocket {
   static CLOSING = 2
   static CLOSED = 3
 
-  send(data) {
+  send(_data) {
     // Mock send method
   }
 
@@ -51,7 +51,7 @@ global.FileReader = class MockFileReader {
   static LOADING = 1
   static DONE = 2
 
-  readAsDataURL(file) {
+  readAsDataURL(_file) {
     setTimeout(() => {
       this.readyState = MockFileReader.DONE
       this.result = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='

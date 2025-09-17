@@ -131,7 +131,7 @@ describe('ImageUpload Component', () => {
   })
 
   it('shows alert for invalid file types', async () => {
-    const user = userEvent.setup()
+    userEvent.setup()
     const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {})
 
     render(

@@ -1,6 +1,5 @@
 // App.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Line } from 'react-chartjs-2';
 import ScenarioForm from './ScenarioForm.jsx';
 import '~/styles.css';
 
@@ -195,7 +194,7 @@ function App() {
                 wsRef.current.close(1000, 'Component unmounting');
             }
         };
-    }, []);
+    }, [connectWebSocket]);
 
     // Trigger reconnection when attempts change
     useEffect(() => {
@@ -458,29 +457,6 @@ function AgentCard({ title, data, color = 'blue' }) {
     );
 }
 
-
-function AgentCard1({ title, data, color }) {
-    console.log('AgentCard::data', data);
-    return (
-        <div className={`bg-white rounded-lg shadow-lg p-6 border-l-4 border-${color}-500`}>
-            <h3 className="text-xl font-semibold mb-4">{title}</h3>
-            {data ? (
-                <div className="space-y-2">
-                    {Object.entries(data).map(([key, value]) => (
-                        <div key={key} className="flex justify-between">
-                            <span className="text-gray-600">{key}:</span>
-                            <span className="font-medium">
-                                {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="animate-pulse">Analizando...</div>
-            )}
-        </div>
-    );
-}
 
 function DecisionPanel({ data }) {
     if (!data) return null;

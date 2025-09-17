@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ImageUpload from './ImageUpload';
 
 function ScenarioForm({ onSubmit, isConnected, isAnalyzing }) {
   const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [environmentDescription, setEnvironmentDescription] = useState('');
 
   const handleSubmit = (e) => {
@@ -15,9 +14,8 @@ function ScenarioForm({ onSubmit, isConnected, isAnalyzing }) {
     }
   };
 
-  const handleImageSelect = (imageData, file) => {
+  const handleImageSelect = (imageData) => {
     setSelectedImage(imageData);
-    setSelectedImageFile(file);
   };
 
   const predefinedEnvironments = [
