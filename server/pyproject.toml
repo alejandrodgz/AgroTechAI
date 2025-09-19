@@ -35,6 +35,7 @@ dev = [
     "pytest-asyncio>=0.21.1",
     "pytest-mock>=3.12.0",
     "pytest-cov>=4.1.0",
+    "pytest-html>=4.1.1",
     "pytest-xdist>=3.5.0",
     "httpx>=0.25.2",
     "respx>=0.20.2",
@@ -50,6 +51,7 @@ test = [
     "pytest-asyncio>=0.21.1",
     "pytest-mock>=3.12.0",
     "pytest-cov>=4.1.0",
+    "pytest-html>=4.1.1",
     "httpx>=0.25.2",
     "respx>=0.20.2",
 ]
@@ -71,6 +73,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
+    "--html=report.html",
 ]
 testpaths = ["tests"]
 asyncio_mode = "auto"

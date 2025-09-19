@@ -65,7 +65,7 @@ def main():
         success = run_command(
             (
                 "pytest tests/ --cov=. --cov-report=html "
-                "--cov-report=term-missing --cov-report=xml"
+                "--cov-report=term-missing --cov-report=xml "
             ),
             "Test Coverage Report",
         )
