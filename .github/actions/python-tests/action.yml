@@ -52,12 +52,7 @@ runs:
       shell: bash
       run: make py-test-coverage
 
-    - name: Upload Test Reports Artifacts
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-reports
-        path: |
-          server/htmlcov/
-          server/assets/
-          server/report.html
+    - name: Set coverage output
+      id: coverage
+      shell: bash
+      run: echo "path=server/htmlcov/:server/report.html:server/coverage.xml" >> $GITHUB_OUTPUT
