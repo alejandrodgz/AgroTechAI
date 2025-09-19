@@ -55,6 +55,9 @@ runs:
     - name: Set coverage output
       id: coverage
       shell: bash
-      run: echo "path=server/htmlcov/
-server/report.html
-server/coverage.xml" >> $GITHUB_OUTPUT
+      run: |
+        {
+          echo "path=server/htmlcov/"
+          echo "server/report.html"
+          echo "server/coverage.xml"
+        } >> $GITHUB_OUTPUT
