@@ -51,6 +51,36 @@ jobs:
           name: javascript-coverage-reports
           path: ${{ steps.js-tests.outputs.coverage-path }}
 
+  sonarcloud:
+    runs-on: ubuntu-22.04
+    name: SonarCloud Analysis
+    needs: [test-python, test-javascript]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Python coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: python-coverage-reports
+          path: server/
+
+      - name: Download JavaScript coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: javascript-coverage-reports
+          path: client/
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
   docker-deploy:
     runs-on: ubuntu-22.04
     name: Docker Build and Push

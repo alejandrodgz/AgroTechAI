@@ -36,6 +36,13 @@ runs:
       shell: bash
       run: make py-lint
 
+    - name: Generate Pylint report
+      shell: bash
+      run: |
+        cd server
+        pylint agrotech_ai/ --output-format=text --fail-under=9 > pylint-report.txt || true
+        cd ..
+
     - name: Run Python formatting check
       shell: bash
       run: make py-format
