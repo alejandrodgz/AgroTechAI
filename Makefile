@@ -74,7 +74,7 @@ js-lint-fix:
 
 # Start Python development server
 py-run:
-	cd server && uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+	cd server && uvicorn agrotech_ai.app:app --host 0.0.0.0 --port 8000 --reload
 
 # Start JavaScript development server
 js-run:
