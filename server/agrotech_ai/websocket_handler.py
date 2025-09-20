@@ -149,6 +149,85 @@ class WebSocketHandler:
             "📸 Análisis de Imagen",
         )
 
+    async def _run_concurrent_analysis(
+        self,
+        websocket: WebSocket,
+        image_description: str,
+        environment_description: str,
+        scenario_name: str,
+    ):
+        """Run AgriVision and SoilSense concurrently, then CropMaster decision"""
+        # Informar escenario actual
+        await websocket.send_json(
+            {
+                "type": "scenario",
+                "data": {
+                    "name": scenario_name,
+                    "description": f"Analizando: {scenario_name}",
+                },
+            }
+        )
+
+        # Ejecutar AgriVision y SoilSense CONCURRENTEMENTE
+        await websocket.send_json(
+            {
+                "type": "status",
+                "message": (
+                    "🔍🌍 Analizando salud del cultivo y condiciones "
+                    "ambientales concurrentemente..."
+                ),
+            }
+        )
+
+        # Ejecutar ambos agentes en paralelo
+        vision_task = self.agri_vision.analyze_image(image_description)
+        soil_task = self.soil_sense.analyze_environment(environment_description)
+
+        # Esperar a que ambos terminen
+        vision_result, soil_result = await asyncio.gather(vision_task, soil_task)
+
+        # Enviar resultados tan pronto como estén listos
+        await websocket.send_json(
+            {
+                "type": "agent_result",
+                "agent": "AgriVision",
+                "data": vision_result,
+            }
+        )
+
+        await websocket.send_json(
+            {
+                "type": "agent_result",
+                "agent": "SoilSense",
+                "data": soil_result,
+            }
+        )
+
+        await asyncio.sleep(1)  # Reduced delay since they ran concurrently
+
+        # CropMaster (decisión final)
+        await websocket.send_json(
+            {
+                "type": "status",
+                "message": "🧠 CropMaster fusionando datos y decidiendo...",
+            }
+        )
+
+        final_decision = await self.crop_master.make_decision(
+            vision_result, soil_result
+        )
+        await websocket.send_json(
+            {
+                "type": "agent_result",
+                "agent": "CropMaster",
+                "data": final_decision,
+            }
+        )
+
+        await websocket.send_json(
+            {"type": "status", "message": "✅ Análisis completado"}
+        )
+
     async def analyze_image_scenario(
         self,
         websocket: WebSocket,
@@ -158,17 +237,6 @@ class WebSocketHandler:
     ):
         """Analyze a scenario starting with image analysis using ImageVision"""
         try:
-            # Informar escenario actual
-            await websocket.send_json(
-                {
-                    "type": "scenario",
-                    "data": {
-                        "name": scenario_name,
-                        "description": f"Analizando: {scenario_name}",
-                    },
-                }
-            )
-
             # Paso 1: ImageVision (análisis de imagen)
             await websocket.send_json(
                 {
@@ -201,64 +269,9 @@ class WebSocketHandler:
                 f"{soil_indicators}. Contexto: {environmental_context}"
             )
 
-            # Paso 2: Ejecutar AgriVision y SoilSense CONCURRENTEMENTE
-            await websocket.send_json(
-                {
-                    "type": "status",
-                    "message": (
-                        "🔍🌍 Analizando salud del cultivo y condiciones "
-                        "ambientales concurrentemente..."
-                    ),
-                }
-            )
-
-            # Ejecutar ambos agentes en paralelo
-            vision_task = self.agri_vision.analyze_image(image_description)
-            soil_task = self.soil_sense.analyze_environment(combined_environment)
-
-            # Esperar a que ambos terminen
-            vision_result, soil_result = await asyncio.gather(vision_task, soil_task)
-
-            # Enviar resultados tan pronto como estén listos
-            await websocket.send_json(
-                {
-                    "type": "agent_result",
-                    "agent": "AgriVision",
-                    "data": vision_result,
-                }
-            )
-
-            await websocket.send_json(
-                {
-                    "type": "agent_result",
-                    "agent": "SoilSense",
-                    "data": soil_result,
-                }
-            )
-
-            await asyncio.sleep(1)  # Reduced delay since they ran concurrently
-
-            # Paso 3: CropMaster (decisión final integrando todos los datos)
-            await websocket.send_json(
-                {
-                    "type": "status",
-                    "message": "🧠 CropMaster fusionando datos y decidiendo...",
-                }
-            )
-
-            final_decision = await self.crop_master.make_decision(
-                vision_result, soil_result
-            )
-            await websocket.send_json(
-                {
-                    "type": "agent_result",
-                    "agent": "CropMaster",
-                    "data": final_decision,
-                }
-            )
-
-            await websocket.send_json(
-                {"type": "status", "message": "✅ Análisis completado"}
+            # Paso 2: Ejecutar el análisis concurrente común
+            await self._run_concurrent_analysis(
+                websocket, image_description, combined_environment, scenario_name
             )
 
         except Exception as e:
@@ -278,75 +291,8 @@ class WebSocketHandler:
     ):
         """Analyze a scenario using all three AI agents"""
         try:
-            # Informar escenario actual
-            await websocket.send_json(
-                {
-                    "type": "scenario",
-                    "data": {
-                        "name": scenario_name,
-                        "description": f"Analizando: {scenario_name}",
-                    },
-                }
-            )
-
-            # Paso 1: Ejecutar AgriVision y SoilSense CONCURRENTEMENTE
-            await websocket.send_json(
-                {
-                    "type": "status",
-                    "message": (
-                        "🔍🌍 Analizando imagen y condiciones ambientales "
-                        "concurrentemente..."
-                    ),
-                }
-            )
-
-            # Ejecutar ambos agentes en paralelo
-            vision_task = self.agri_vision.analyze_image(image_description)
-            soil_task = self.soil_sense.analyze_environment(environment_description)
-
-            # Esperar a que ambos terminen
-            vision_result, soil_result = await asyncio.gather(vision_task, soil_task)
-
-            # Enviar resultados tan pronto como estén listos
-            await websocket.send_json(
-                {
-                    "type": "agent_result",
-                    "agent": "AgriVision",
-                    "data": vision_result,
-                }
-            )
-
-            await websocket.send_json(
-                {
-                    "type": "agent_result",
-                    "agent": "SoilSense",
-                    "data": soil_result,
-                }
-            )
-
-            await asyncio.sleep(1)  # Reduced delay since they ran concurrently
-
-            # Paso 2: CropMaster (decisión final)
-            await websocket.send_json(
-                {
-                    "type": "status",
-                    "message": "🧠 CropMaster fusionando datos y decidiendo...",
-                }
-            )
-
-            final_decision = await self.crop_master.make_decision(
-                vision_result, soil_result
-            )
-            await websocket.send_json(
-                {
-                    "type": "agent_result",
-                    "agent": "CropMaster",
-                    "data": final_decision,
-                }
-            )
-
-            await websocket.send_json(
-                {"type": "status", "message": "✅ Análisis completado"}
+            await self._run_concurrent_analysis(
+                websocket, image_description, environment_description, scenario_name
             )
 
         except Exception as e:

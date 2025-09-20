@@ -36,6 +36,10 @@ runs:
       shell: bash
       run: make py-format
 
+    - name: Setup coverage folder
+      shell: bash
+      run: mkdir server/coverage
+
     - name: Run Python linting
       shell: bash
       run: make py-lint-all
