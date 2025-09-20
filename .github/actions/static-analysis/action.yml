@@ -1,0 +1,63 @@
+name: 'Static Code Analysis'
+description: 'Run SonarCloud static analysis with coverage and linting reports'
+
+inputs:
+  github-token:
+    description: 'GitHub token for SonarCloud integration'
+    required: true
+  sonar-token:
+    description: 'SonarCloud authentication token'
+    required: true
+  python-coverage-artifact:
+    description: 'Name of Python coverage artifact'
+    required: false
+    default: 'python-coverage-reports'
+  javascript-coverage-artifact:
+    description: 'Name of JavaScript coverage artifact'
+    required: false
+    default: 'javascript-coverage-reports'
+  debug-enabled:
+    description: 'Enable debug output to verify artifact structure'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Download Python coverage reports
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.python-coverage-artifact }}
+        path: .
+
+    - name: Download JavaScript coverage reports
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.javascript-coverage-artifact }}
+        path: .
+
+    - name: Debug - List artifact structure
+      if: ${{ inputs.debug-enabled == 'true' }}
+      shell: bash
+      run: |
+        echo "=== Repository root structure ==="
+        find . -name "*.xml" -o -name "*.info" -o -name "coverage.xml" -o -name "lcov.info" -o -name "*-report.*" | head -20
+        echo "=== Server directory structure ==="
+        ls -la server/ || echo "No server directory"
+        echo "=== Client directory structure ==="
+        ls -la client/ || echo "No client directory"
+        echo "=== Looking for coverage files specifically ==="
+        find . -path "*/coverage/*" -type f | head -10
+        echo "=== Looking for linter report files ==="
+        find . -name "pylint-report.txt" -o -name "flake8-report.txt" -o -name "eslint-report.json" | head -10
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarqube-scan-action@v5.0.0
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        SONAR_TOKEN: ${{ inputs.sonar-token }}
