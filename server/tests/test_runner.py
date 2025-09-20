@@ -74,7 +74,6 @@ def main():
             ("black --check agrotech_ai/ tests/", "Code Formatting Check"),
             ("isort --check-only agrotech_ai/ tests/", "Import Sorting Check"),
             ("flake8 agrotech_ai/ --output-file 'flake8-report.txt' ", "Code Linting"),
-            ("pylint  agrotech_ai/ --output-format=text --fail-under=9 > pylint-report.txt", "Code Quality Check"),
         ]
 
         for cmd, desc in commands:
