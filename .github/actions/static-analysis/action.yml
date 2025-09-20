@@ -28,13 +28,13 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.python-coverage-artifact }}
-        path: .
+        path: ./sonar
 
     - name: Download JavaScript coverage reports
       uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.javascript-coverage-artifact }}
-        path: .
+        path: ./sonar
 
     - name: Debug - List artifact structure
       if: ${{ inputs.debug-enabled == 'true' }}
