@@ -1,10 +1,9 @@
-name: CI Pipeline
+name: CI Pipeline for Features
 
 on:
   push:
     branches:
-      - feature/ci_setup
-      - main
+      - feature/*
   pull_request:
     branches:
       - main
