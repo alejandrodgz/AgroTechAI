@@ -14,9 +14,9 @@ services:
           cpus: '4.0'
     
     # AMD ROCm GPU devices
-    devices:
-      - /dev/kfd:/dev/kfd
-      - /dev/dri:/dev/dri
+    # devices:
+    #   - /dev/kfd:/dev/kfd
+    #   - /dev/dri:/dev/dri
     
     # Ports
     ports:
