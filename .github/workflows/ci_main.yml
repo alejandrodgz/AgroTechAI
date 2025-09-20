@@ -51,7 +51,7 @@ jobs:
           name: javascript-coverage-reports
           path: ${{ steps.js-tests.outputs.coverage-path }}
 
-  sonarcloud:
+  check-code-statically:
     runs-on: ubuntu-22.04
     name: SonarCloud Analysis
     needs: [test-python, test-javascript]
@@ -67,24 +67,36 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: python-coverage-reports
-          path: server/
+          path: ${{ steps.python-tests.outputs.coverage-path }}
 
       - name: Download JavaScript coverage reports
         uses: actions/download-artifact@v4
         with:
           name: javascript-coverage-reports
-          path: client/
+          path: ${{ steps.js-tests.outputs.coverage-path }}
+
+      - name: Debug - List artifact structure
+        shell: bash
+        run: |
+          echo "=== Repository root structure ==="
+          find . -name "*.xml" -o -name "*.info" -o -name "coverage.xml" -o -name "lcov.info" | head -20
+          echo "=== Server directory structure ==="
+          ls -la server/ || echo "No server directory"
+          echo "=== Client directory structure ==="
+          ls -la client/ || echo "No client directory"
+          echo "=== Looking for coverage files specifically ==="
+          find . -path "*/coverage/*" -type f | head -10
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   docker-deploy:
     runs-on: ubuntu-22.04
     name: Docker Build and Push
-    needs: [test-python, test-javascript]
+    needs: [check-code-statically]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
