@@ -33,6 +33,7 @@ misc
 
 ## Coverage
 .coverage
+coverage/
 htmlcov/
 assets/
 coverage.xml

@@ -114,22 +114,26 @@ docker-rebuild:
 docker-clean:
 	docker compose down -v
 
-# Cleanup in the project
-clean:
+# Cleanup in the server project
+clean-python:
 	# Python cleanup
-	find server -type d -name "__pycache__" -exec rm -rf {} +
-	find server -type f -name "*.pyc" -delete
-	find server -type f -name "*.pyo" -delete
-	find server -type f -name "*.pyd" -delete
 	find server -type f -name ".coverage" -delete
 	find server -type d -name "*.egg-info" -exec rm -rf {} +
 	find server -type d -name ".pytest_cache" -exec rm -rf {} +
 	find server -type d -name ".mypy_cache" -exec rm -rf {} +
 	rm -rf server/htmlcov/
 	rm -rf server/coverage.xml
+	rm -rf server/report.html
+	rm -rf server/coverage
 	rm -rf server/dist/
 	rm -rf server/build/
+
+# Cleanup in the client project
+clean-js:
 	# JavaScript cleanup
 	rm -rf client/dist/
 	rm -rf client/coverage/
 	rm -rf client/node_modules/.cache/
+
+# Cleanup in the project
+clean: clean-python clean-js

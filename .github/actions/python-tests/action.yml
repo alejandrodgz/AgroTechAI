@@ -40,14 +40,6 @@ runs:
       shell: bash
       run: make py-format
 
-    - name: Run Python unit tests
-      shell: bash
-      run: make py-test-unit
-
-    - name: Run Python integration tests
-      shell: bash
-      run: make py-test-integration
-
     - name: Run Python tests with coverage
       shell: bash
       run: make py-test-coverage
@@ -56,4 +48,4 @@ runs:
       id: coverage
       shell: bash
       run: |
-        echo -e "path=-server/htmlcov/\n-server/report.html\n-server/coverage.xml" >> $GITHUB_OUTPUT
+        echo -e "path=server/coverage" >> $GITHUB_OUTPUT

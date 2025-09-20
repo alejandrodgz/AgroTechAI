@@ -63,16 +63,11 @@ def main():
 
     elif test_type == "coverage":
         success = run_command(
-            (
-                "pytest tests/ --cov=. --cov-report=html "
-                "--cov-report=term-missing --cov-report=xml "
-            ),
+            "pytest tests/ --cov=.",
             "Test Coverage Report",
         )
         if success:
             print("\nCoverage report generated:")
-            print("- HTML: htmlcov/index.html")
-            print("- XML: coverage.xml")
 
     elif test_type == "lint":
         commands = [
