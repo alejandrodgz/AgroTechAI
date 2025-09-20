@@ -42,7 +42,21 @@ runs:
       shell: bash
       run: make js-test-coverage
 
+    - name: Generate linting report for static analysis
+      shell: bash
+      run: |
+        cd client
+        npx eslint . --ext js,jsx --format json --output-file eslint-report.json || true
+
+    - name: Prepare static analysis artifacts
+      shell: bash
+      run: |
+        mkdir -p client/static-analysis-reports
+        # Copy only the files needed for static analysis
+        cp client/coverage/lcov.info client/static-analysis-reports/ || echo "lcov.info not found"
+        cp client/eslint-report.json client/static-analysis-reports/ || echo "eslint-report.json not found"
+
     - name: Set coverage output
       id: coverage
       shell: bash
-      run: echo "path=client/coverage/" >> $GITHUB_OUTPUT
+      run: echo "path=client/static-analysis-reports" >> $GITHUB_OUTPUT
