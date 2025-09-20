@@ -58,6 +58,11 @@ jobs:
     if: always()
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Run static code analysis
         uses: ./.github/actions/static-analysis
         with:

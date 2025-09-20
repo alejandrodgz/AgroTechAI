@@ -24,11 +24,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
     - name: Download Python coverage reports
       uses: actions/download-artifact@v4
       with:
@@ -45,6 +40,8 @@ runs:
       if: ${{ inputs.debug-enabled == 'true' }}
       shell: bash
       run: |
+        echo "=== Check root structure ==="
+        ls -la . || echo "Fail run ls command in the root"
         echo "=== Repository root structure ==="
         find . -name "*.xml" -o -name "*.info" -o -name "coverage.xml" -o -name "lcov.info" -o -name "*-report.*" | head -20
         echo "=== Server directory structure ==="
