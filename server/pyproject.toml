@@ -1,0 +1,171 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agrotech-ai"
+version = "1.0.0"
+description = "Agricultural Monitoring System with Multi-Agent AI"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "AgroTech AI Team", email = "team@agrotech.ai"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.116.1",
+    "uvicorn[standard]==0.35.0",
+    "requests==2.31.0",
+    "websockets==12.0",
+    "Pillow==10.1.0",
+    "urllib3==2.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.4",
+    "pytest-asyncio>=0.21.1",
+    "pytest-mock>=3.12.0",
+    "pytest-cov>=4.1.0",
+    "pytest-html>=4.1.1",
+    "pytest-xdist>=3.5.0",
+    "httpx>=0.25.2",
+    "respx>=0.20.2",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "flake8-pyproject>=1.2.3",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+test = [
+    "pytest>=7.4.4",
+    "pytest-asyncio>=0.21.1",
+    "pytest-mock>=3.12.0",
+    "pytest-cov>=4.1.0",
+    "pytest-html>=4.1.1",
+    "httpx>=0.25.2",
+    "respx>=0.20.2",
+]
+
+[project.scripts]
+agrotech-server = "agrotech_ai.app:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agrotech_ai*"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=.",
+    "--cov-report=term-missing",
+    "--cov-report=html:coverage/htmlcov",
+    "--cov-report=xml:coverage/coverage.xml",
+    "--html=coverage/report.html",
+]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow tests",
+    "ollama: Tests requiring Ollama connection",
+]
+
+[tool.coverage.run]
+source = ["agrotech_ai"]
+omit = [
+    "*/tests/*",
+    "*/python3.12/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | python3.12
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["agrotech_ai"]
+skip_glob = ["python3.12/*"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "PIL.*",
+    "uvicorn.*",
+    "requests.*",
+]
+ignore_missing_imports = true
+
+[tool.flake8]
+max-line-length=92
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "python3.12",
+    "build",
+    "dist",
+    ".eggs",
+    "*.egg-info",
+    ".venv",
+    ".tox",
+]

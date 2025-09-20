@@ -1,0 +1,51 @@
+name: 'Python Tests & Quality'
+description: 'Run Python linting, formatting, and tests with coverage'
+
+inputs:
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.12'
+
+outputs:
+  coverage-path:
+    description: 'Path to coverage reports'
+    value: ${{ steps.coverage.outputs.path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install Python dependencies
+      shell: bash
+      run: make py-install-dev
+
+    - name: Run Python linting
+      shell: bash
+      run: make py-lint
+
+    - name: Run Python formatting check
+      shell: bash
+      run: make py-format
+
+    - name: Run Python tests with coverage
+      shell: bash
+      run: make py-test-coverage
+
+    - name: Set coverage output
+      id: coverage
+      shell: bash
+      run: |
+        echo -e "path=server/coverage" >> $GITHUB_OUTPUT

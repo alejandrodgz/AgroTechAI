@@ -3,6 +3,7 @@ node_modules/
 */node_modules/
 
 # Python virtual environments
+python3.12/
 demo/
 venv/
 env/
@@ -16,6 +17,7 @@ venv.bak/
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
 
 # OS generated files
 .DS_Store
@@ -25,3 +27,22 @@ __pycache__/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Miscelanous folder to ignore
+misc
+
+## Coverage
+.coverage
+coverage/
+htmlcov/
+assets/
+coverage.xml
+report.html
+acceptance_coverage.xml
+
+## Logs
+agrotech_ai.egg-info/
+*.log
+
+## Javascript
+client/dist/
