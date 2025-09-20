@@ -43,3 +43,6 @@ acceptance_coverage.xml
 ## Logs
 agrotech_ai.egg-info/
 *.log
+
+## Javascript
+client/dist/
