@@ -73,7 +73,10 @@ def main():
         commands = [
             ("black --check agrotech_ai/ tests/", "Code Formatting Check"),
             ("isort --check-only agrotech_ai/ tests/", "Import Sorting Check"),
-            ("flake8 agrotech_ai/ --output-file 'flake8-report.txt'", "Code Linting"),
+            (
+                'flake8 agrotech_ai/ --output-file "coverage/flake8-report.txt"',
+                "Code Linting",
+            ),
         ]
 
         for cmd, desc in commands:

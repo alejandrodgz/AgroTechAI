@@ -32,20 +32,13 @@ runs:
       shell: bash
       run: make py-install-dev
 
-    - name: Run Python linting
-      shell: bash
-      run: make py-lint
-
-    - name: Generate Pylint report
-      shell: bash
-      run: |
-        cd server
-        pylint agrotech_ai/ --output-format=text --fail-under=9 > pylint-report.txt || true
-        cd ..
-
     - name: Run Python formatting check
       shell: bash
       run: make py-format
+
+    - name: Run Python linting
+      shell: bash
+      run: make py-lint-all
 
     - name: Run Python tests with coverage
       shell: bash

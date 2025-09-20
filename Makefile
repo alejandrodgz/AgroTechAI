@@ -56,8 +56,12 @@ js-test-coverage:
 js-test-watch:
 	cd client && npm run test:watch
 
-# Run Python linting checks
+# Run pylint checks
 py-lint:
+	cd server && pylint agrotech_ai/ --output-format=text --fail-under=9 > coverage/pylint-report.txt || true
+
+# Run all python linters
+py-lint-all: py-lint
 	cd server && python tests/test_runner.py lint
 
 # Format Python code with black and isort
