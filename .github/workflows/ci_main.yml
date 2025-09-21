@@ -70,9 +70,9 @@ jobs:
           sonar-token: ${{ secrets.SONAR_TOKEN }}
           python-coverage-artifact: python-coverage-reports
           javascript-coverage-artifact: javascript-coverage-reports
-          debug-enabled: 'true'
+          debug-enabled: 'false'
 
-  docker-deploy:
+  docker-deploy-api:
     runs-on: ubuntu-22.04
     name: Docker Build and Push
     needs: [check-code-statically]
@@ -88,4 +88,26 @@ jobs:
         with:
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          image-name: agrotech-ai
+          image-name: agrotech-ai-api
+          context-path: './server'
+          dockerfile-path: './server/Dockerfile'
+
+  docker-deploy-fe:
+    runs-on: ubuntu-22.04
+    name: Docker Build and Push
+    needs: [check-code-statically]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and push Docker image
+        id: docker-push
+        uses: ./.github/actions/docker-push
+        with:
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          image-name: agrotech-ai-fe
+          context-path: './client'
+          dockerfile-path: './client/Dockerfile'

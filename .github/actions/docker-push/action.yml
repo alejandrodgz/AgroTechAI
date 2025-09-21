@@ -12,13 +12,11 @@ inputs:
     required: true
   dockerfile-path:
     description: 'Path to Dockerfile'
-    required: false
-    default: './server/Dockerfile'
+    required: true
   context-path:
     description: 'Build context path'
-    required: false
-    default: './server'
-  push-latest:
+    required: true
+  push-as-latest:
     description: 'Push latest tag'
     required: false
     default: 'true'
@@ -54,6 +52,17 @@ runs:
         push: true
         tags: |
           ${{ inputs.dockerhub-username }}/${{ inputs.image-name }}:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Push Docker latest image
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.context-path }}
+        file: ${{ inputs.dockerfile-path }}
+        if: ${{ inputs.push-as-latest }}
+        push: true
+        tags: |
           ${{ inputs.dockerhub-username }}/${{ inputs.image-name }}:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
