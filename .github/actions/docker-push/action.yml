@@ -57,10 +57,10 @@ runs:
     
     - name: Push Docker latest image
       uses: docker/build-push-action@v5
+      if: ${{ inputs.push-as-latest == 'true' }}
       with:
         context: ${{ inputs.context-path }}
         file: ${{ inputs.dockerfile-path }}
-        if: ${{ inputs.push-as-latest }}
         push: true
         tags: |
           ${{ inputs.dockerhub-username }}/${{ inputs.image-name }}:latest

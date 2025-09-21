@@ -74,7 +74,7 @@ jobs:
 
   docker-deploy-api:
     runs-on: ubuntu-22.04
-    name: Docker Build and Push
+    name: Docker Build and Push API
     needs: [check-code-statically]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
@@ -91,10 +91,11 @@ jobs:
           image-name: agrotech-ai-api
           context-path: './server'
           dockerfile-path: './server/Dockerfile'
+          push-as-latest: 'false'
 
   docker-deploy-fe:
     runs-on: ubuntu-22.04
-    name: Docker Build and Push
+    name: Docker Build and Push FE
     needs: [check-code-statically]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
@@ -111,3 +112,4 @@ jobs:
           image-name: agrotech-ai-fe
           context-path: './client'
           dockerfile-path: './client/Dockerfile'
+          push-as-latest: 'false'
