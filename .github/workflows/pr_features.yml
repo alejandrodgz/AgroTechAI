@@ -1,9 +1,6 @@
-name: CI Pipeline for Features
+name: Pull Request to main
 
 on:
-  push:
-    branches:
-      - feature/*
   pull_request:
     branches:
       - main
