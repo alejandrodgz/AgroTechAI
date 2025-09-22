@@ -89,6 +89,6 @@ jobs:
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           image-name: agrotech-ai-app
-          context-path: './env-deployment'
-          dockerfile-path: './env-deployment/Dockerfile'
+          context-path: '.'
+          dockerfile-path: 'env-deployment/Dockerfile'
           push-as-latest: 'false'
