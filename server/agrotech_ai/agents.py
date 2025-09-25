@@ -18,8 +18,10 @@ from .ollama_client import OllamaAgent, get_shared_session, reset_shared_session
 # Configuración de Ollama
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_GENERATE_API = f"{OLLAMA_URL}/api/generate"
-MODEL_NAME = "gemma3:4b"
-VISION_MODEL_NAME = "qwen2.5vl:3b"  # Modelo para análisis de imágenes
+
+# Models from environment variables with fallback defaults
+MODEL_NAME = os.getenv("OLLAMA_TEXT_MODEL", "gemma3:270m")
+VISION_MODEL_NAME = os.getenv("OLLAMA_VISION_MODEL", "gemma3:270m")
 
 # Constants
 UNAVAILABLE_VALUE = "No disponible"
@@ -216,7 +218,12 @@ JSON:"""
             logger.info(
                 "✅ [%s] Vision analysis completed in %.2fs", self.role, elapsed_time
             )
-            logger.debug("🌐 [%s] Response status: %s", self.role, response.status_code)
+            logger.debug(
+                "🌐 [%s] Response status: %s, Raw Response: %s",
+                self.role,
+                response.status_code,
+                response.text,
+            )
 
             result = response.json()
             resp = result.get("response", "{}")
