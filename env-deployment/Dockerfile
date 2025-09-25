@@ -14,7 +14,7 @@ RUN npm ci --silent
 COPY client/ ./
 
 ## Remove env for vite
-RUN rm .env
+RUN rm .env || echo 'File not found'
 
 # Build the frontend application (no environment variables needed)
 RUN npm run build
