@@ -21,10 +21,6 @@ OLLAMA_GENERATE_API = f"{OLLAMA_URL}/api/generate"
 MODEL_NAME = "gemma3:4b"
 VISION_MODEL_NAME = "qwen2.5vl:3b"  # Modelo para análisis de imágenes
 
-# Constants
-UNAVAILABLE_VALUE = "No disponible"
-ANALYSIS_ERROR = "Error en análisis"
-
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -78,14 +74,9 @@ class ImageVisionAgent(OllamaAgent):
             compression_ratio = (1 - optimized_size / original_size) * 100
 
             logger.info(
-                "✅ [%s] Image optimized in %.2fs: "
-                "%.1fKB → %.1fKB "
-                "(%.1f%% reduction)",
-                self.role,
-                elapsed_time,
-                original_size / 1024,
-                optimized_size / 1024,
-                compression_ratio,
+                f"✅ [{self.role}] Image optimized in {elapsed_time:.2f}s: "
+                f"{original_size/1024:.1f}KB → {optimized_size/1024:.1f}KB "
+                f"({compression_ratio:.1f}% reduction)"
             )
 
             return base64.b64encode(optimized_data).decode("utf-8")
@@ -102,7 +93,7 @@ class ImageVisionAgent(OllamaAgent):
         for other agents"""
         start_time = time.time()
         logger.info(
-            "🔍 [%s] Starting image analysis with %s", self.role, VISION_MODEL_NAME
+            f"🔍 [{self.role}] Starting image analysis with " f"{VISION_MODEL_NAME}"
         )
 
         # Optimize image first
@@ -178,29 +169,23 @@ JSON:"""
                 "low_vram": False,  # Set to True if running out of VRAM
             },
         }
-        request_timeout = 180
+        timeoutReq = 180
 
         logger.debug(
-            "🔧 [%s] Vision payload created - Model: %s, Options: %s, "
-            "Image data length: %d, Stream: %s",
-            self.role,
-            payload["model"],
-            payload["options"],
-            len(optimized_image),
-            payload["stream"],
+            f"🔧 [{self.role}] Vision payload created - "
+            f"Model: {payload['model']}, Options: {payload['options']}, "
+            f"Image data length: {len(optimized_image)}, "
+            f"Stream: {payload['stream']}"
         )
 
         try:
             logger.info(
-                "🌐 [%s] Sending vision request to Ollama (timeout: %ds)",
-                self.role,
-                request_timeout,
+                f"🌐 [{self.role}] Sending vision request to Ollama "
+                f"(timeout: {timeoutReq}s)"
             )
             logger.debug(
-                "🌐 [%s] Prompt length: %d chars, Image size: %d chars",
-                self.role,
-                len(prompt),
-                len(optimized_image),
+                f"🌐 [{self.role}] Prompt length: {len(prompt)} chars, "
+                f"Image size: {len(optimized_image)} chars"
             )
 
             # Use asyncio to run in thread pool for better async handling
@@ -208,15 +193,17 @@ JSON:"""
             response = await loop.run_in_executor(
                 None,
                 lambda: self.session.post(
-                    OLLAMA_GENERATE_API, json=payload, timeout=request_timeout
+                    OLLAMA_GENERATE_API, json=payload, timeout=timeoutReq
                 ),
             )
 
             elapsed_time = time.time() - start_time
             logger.info(
-                "✅ [%s] Vision analysis completed in %.2fs", self.role, elapsed_time
+                f"✅ [{self.role}] Vision analysis completed in " f"{elapsed_time:.2f}s"
             )
-            logger.debug("🌐 [%s] Response status: %s", self.role, response.status_code)
+            logger.debug(
+                f"🌐 [{self.role}] Response status: " f"{response.status_code}"
+            )
 
             result = response.json()
             resp = result.get("response", "{}")
@@ -248,10 +235,10 @@ JSON:"""
     def _get_fallback_response(self) -> Dict[str, Any]:
         return {
             "image_description": "Error en análisis de imagen",
-            "soil_visual_indicators": UNAVAILABLE_VALUE,
-            "environmental_context": UNAVAILABLE_VALUE,
-            "plant_health_indicators": UNAVAILABLE_VALUE,
-            "recommended_focus_areas": [ANALYSIS_ERROR],
+            "soil_visual_indicators": "No disponible",
+            "environmental_context": "No disponible",
+            "plant_health_indicators": "No disponible",
+            "recommended_focus_areas": ["Error en análisis"],
             "confidence": 0.0,
         }
 
@@ -302,7 +289,7 @@ JSON:"""
             "pest_detected": False,
             "leaf_condition": "unknown",
             "disease_probability": 0.0,
-            "visual_symptoms": [ANALYSIS_ERROR],
+            "visual_symptoms": ["Error en análisis"],
             "recommendations": ["Reintentar análisis"],
             "confidence": 0.0,
         }
@@ -410,7 +397,7 @@ JSON:"""
     def _get_fallback_response(self) -> Dict[str, Any]:
         return {
             "overall_status": "unknown",
-            "priority_actions": [ANALYSIS_ERROR],
+            "priority_actions": ["Error en análisis"],
             "estimated_yield": "unknown",
             "risk_assessment": "unknown",
             "next_inspection_hours": 24,

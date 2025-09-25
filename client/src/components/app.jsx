@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // App.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import PropTypes from 'prop-types';
 import ScenarioForm from './ScenarioForm.jsx';
 import {
     createWebSocketConnection,
@@ -42,6 +43,16 @@ function App() {
     const reconnectTimeoutRef = useRef(null);
     const heartbeatIntervalRef = useRef(null);
 
+    // Helper function to handle reconnection attempts (moved outside to reduce nesting)
+    const scheduleReconnection = useCallback((delay) => {
+        reconnectTimeoutRef.current = setTimeout(() => {
+            setConnectionState(currentState => ({
+                ...currentState,
+                attempts: currentState.attempts + 1
+            }));
+        }, delay);
+    }, []);
+
     // Enhanced WebSocket connection function with reconnection logic
     const connectWebSocket = useCallback((wsUrl) => {
         // Skip if already connected
@@ -56,7 +67,6 @@ function App() {
         }
 
         console.log(`🔌 Attempting WebSocket connection to ${wsUrl} (attempt ${connectionState.attempts + 1})`);
-
         setConnectionState(prev => ({
             ...prev,
             status: prev.attempts === 0 ? 'connecting' : 'reconnecting',
@@ -151,12 +161,7 @@ function App() {
                         const delay = calculateReconnectDelay(prev.attempts);
                         console.log(`🔄 Reconnecting in ${delay}ms (attempt ${prev.attempts + 1}/${maxReconnectAttempts})`);
 
-                        reconnectTimeoutRef.current = setTimeout(() => {
-                            setConnectionState(currentState => ({
-                                ...currentState,
-                                attempts: currentState.attempts + 1
-                            }));
-                        }, delay);
+                        scheduleReconnection(delay);
 
                         newState.status = 'reconnecting';
                         newState.isReconnecting = true;
@@ -175,7 +180,7 @@ function App() {
 
         wsRef.current = websocket;
 
-    }, [connectionState.attempts]);
+    }, [connectionState.attempts, scheduleReconnection]);
 
     // Heartbeat mechanism to keep connection alive
     const startHeartbeat = (websocket) => {
@@ -408,6 +413,16 @@ function ConnectionStatusBanner({ connectionState, onReconnect }) {
     );
 }
 
+ConnectionStatusBanner.propTypes = {
+    connectionState: PropTypes.shape({
+        status: PropTypes.string.isRequired,
+        isReconnecting: PropTypes.bool.isRequired,
+        attempts: PropTypes.number.isRequired,
+        lastError: PropTypes.string
+    }).isRequired,
+    onReconnect: PropTypes.func.isRequired
+};
+
 // A helper function to render values more intelligently
 const renderValue = (value) => {
     if (typeof value === 'boolean') {
@@ -454,7 +469,7 @@ function AgentCard({ title, data, color = 'blue' }) {
                         // Use a React Fragment for each row to avoid adding extra divs to the DOM
                         <React.Fragment key={key}>
                             <span className="text-gray-500 font-medium text-right capitalize">
-                                {key.replace(/_/g, ' ')}:
+                                {key.replaceAll('_', ' ')}:
                             </span>
                             <span className="text-gray-900 font-medium break-words">
                                 {renderValue(value)}
@@ -473,6 +488,16 @@ function AgentCard({ title, data, color = 'blue' }) {
         </div>
     );
 }
+
+AgentCard.propTypes = {
+    title: PropTypes.string.isRequired,
+    data: PropTypes.object,
+    color: PropTypes.oneOf(['blue', 'green', 'red', 'yellow', 'purple'])
+};
+
+AgentCard.defaultProps = {
+    color: 'blue'
+};
 
 
 function DecisionPanel({ data }) {
@@ -500,8 +525,8 @@ function DecisionPanel({ data }) {
                 <div>
                     <h3 className="text-lg font-semibold mb-3">Acciones Prioritarias</h3>
                     <ul className="list-disc list-inside space-y-1">
-                        {data.priority_actions?.map((action, index) => (
-                            <li key={index} className="text-gray-700">{action}</li>
+                        {data.priority_actions?.map((action) => (
+                            <li key={action} className="text-gray-700">{action}</li>
                         ))}
                     </ul>
                 </div>
@@ -509,5 +534,12 @@ function DecisionPanel({ data }) {
         </div>
     );
 }
+
+DecisionPanel.propTypes = {
+    data: PropTypes.shape({
+        overall_status: PropTypes.string,
+        priority_actions: PropTypes.arrayOf(PropTypes.string)
+    })
+};
 
 export default App;
