@@ -130,10 +130,10 @@ def main():
 
     logger.info("🚀 Starting AgroTech AI Server...")
     logger.info("🤖 Using model: %s", MODEL_NAME)
-    logger.info("📱 Server will be available at: http://localhost:8000")
-    logger.info("📊 API docs available at: http://localhost:8000/docs")
+    logger.info("📱 Server will be available at: http://localhost:5000")
+    logger.info("📊 API docs available at: http://localhost:5000/docs")
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
 
 
 if __name__ == "__main__":
