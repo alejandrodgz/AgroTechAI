@@ -133,8 +133,30 @@ jobs:
       - name: Deploy CloudFormation Staging Stack
         run: |
           # Reconstruir la URI de la imagen usando el secreto y las salidas separadas
-          IMAGE_URI="${{ needs.build-agrotech-app-image.outputs.image_uri_sha }}"
-          echo "Deploying Image URI: $IMAGE_URI" # Log para verificar (el username se ocultará aquí)
+          echo "[DEBUG] Job output (image_uri_sha): '${{ needs.build-agrotech-app-image.outputs.image_uri_sha }}'"
+          # Fallback si la salida del job anterior viene vacía (por fallo o condición)
+          if [ -z "${{ needs.build-agrotech-app-image.outputs.image_uri_sha }}" ]; then
+            echo "[WARN] image_uri_sha vacío. Reconstruyendo usando secrets + commit SHA."
+            IMAGE_URI_FALLBACK="${{ secrets.DOCKERHUB_USERNAME }}/agrotech-ai-app:${{ github.sha }}"
+          else
+            IMAGE_URI_FALLBACK="${{ needs.build-agrotech-app-image.outputs.image_uri_sha }}"
+          fi
+          IMAGE_URI="$IMAGE_URI_FALLBACK"
+
+          if [ -z "$IMAGE_URI" ]; then
+            echo "[ERROR] IMAGE_URI final está vacío. Abortando despliegue CloudFormation."
+            exit 1
+          fi
+
+          echo "Deploying Image URI (staging): $IMAGE_URI"
+
+          echo "Verificando existencia de la imagen en Docker Hub..."
+          # Intentar un pull ligero (usa capa cache) para validar que la imagen existe
+          if ! docker pull "$IMAGE_URI" > /dev/null 2>&1; then
+            echo "[ERROR] La imagen $IMAGE_URI no existe o no es accesible. Abortando."
+            exit 1
+          fi
+          echo "Imagen verificada correctamente. Continuando con CloudFormation."
 
           aws cloudformation deploy \
             --template-file template.yaml \
@@ -269,8 +291,28 @@ jobs:
       - name: Deploy CloudFormation Production Stack
         run: |
           # Reconstruir la URI de la imagen usando el secreto y las salidas separadas
-          IMAGE_URI="${{ needs.build-agrotech-app-image.outputs.image_uri_sha }}"
-          echo "Deploying Image URI: $IMAGE_URI" # Log para verificar
+          echo "[DEBUG] Job output (image_uri_sha): '${{ needs.build-agrotech-app-image.outputs.image_uri_sha }}'"
+          if [ -z "${{ needs.build-agrotech-app-image.outputs.image_uri_sha }}" ]; then
+            echo "[WARN] image_uri_sha vacío. Reconstruyendo usando secrets + commit SHA."
+            IMAGE_URI_FALLBACK="${{ secrets.DOCKERHUB_USERNAME }}/agrotech-ai-app:${{ github.sha }}"
+          else
+            IMAGE_URI_FALLBACK="${{ needs.build-agrotech-app-image.outputs.image_uri_sha }}"
+          fi
+          IMAGE_URI="$IMAGE_URI_FALLBACK"
+
+          if [ -z "$IMAGE_URI" ]; then
+            echo "[ERROR] IMAGE_URI final está vacío. Abortando despliegue CloudFormation."
+            exit 1
+          fi
+
+            echo "Deploying Image URI (production): $IMAGE_URI"
+
+          echo "Verificando existencia de la imagen en Docker Hub..."
+          if ! docker pull "$IMAGE_URI" > /dev/null 2>&1; then
+            echo "[ERROR] La imagen $IMAGE_URI no existe o no es accesible. Abortando."
+            exit 1
+          fi
+            echo "Imagen verificada correctamente. Continuando con CloudFormation."
 
           aws cloudformation deploy \
             --template-file template.yaml \
