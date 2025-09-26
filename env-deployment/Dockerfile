@@ -72,11 +72,11 @@ RUN chmod +x /usr/local/bin/pull-models.sh
 WORKDIR /app/server
 
 # Create a health check script that checks nginx, backend, and ollama
-RUN echo '#!/bin/sh\ncurl -f http://localhost/health && curl -f http://localhost:11434/api/tags || exit 1' > /usr/local/bin/healthcheck.sh \
+RUN echo '#!/bin/sh\ncurl -f http://localhost:8000/health && curl -f http://localhost:11434/api/tags || exit 1' > /usr/local/bin/healthcheck.sh \
     && chmod +x /usr/local/bin/healthcheck.sh
 
 # Expose ports (nginx and ollama)
-EXPOSE 80 11434
+EXPOSE 8000 11434
 
 # Add health check that checks both nginx and ollama
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
