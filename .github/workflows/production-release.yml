@@ -1,0 +1,110 @@
+name: Production Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes (optional)'
+        required: false
+        type: string
+
+jobs:
+  create-tag-and-release:
+    runs-on: ubuntu-22.04
+    name: Create Git Tag and Docker Release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate version format
+        run: |
+          if [[ ! "${{ github.event.inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must follow semantic versioning format (e.g., v1.0.0)"
+            exit 1
+          fi
+
+      - name: Check if tag already exists
+        run: |
+          if git tag -l | grep -q "^${{ github.event.inputs.version }}$"; then
+            echo "Error: Tag ${{ github.event.inputs.version }} already exists"
+            exit 1
+          fi
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Create and push tag
+        run: |
+          git tag -a ${{ github.event.inputs.version }} -m "Release ${{ github.event.inputs.version }}"
+          git push origin ${{ github.event.inputs.version }}
+
+      - name: Run tests before building
+        uses: ./.github/actions/python-tests
+        with:
+          python-version: '3.12'
+
+      - name: Run JavaScript tests
+        uses: ./.github/actions/javascript-tests
+        with:
+          node-version: '20.18.3'
+
+      - name: Build and push production Docker image
+        id: docker-production
+        uses: ./.github/actions/docker-push
+        with:
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          image-name: agrotech-ai-app
+          context-path: '.'
+          dockerfile-path: 'env-deployment/Dockerfile'
+          push-as-latest: 'true'
+          tag-version: ${{ github.event.inputs.version }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: Release ${{ github.event.inputs.version }}
+          body: |
+            ## Release ${{ github.event.inputs.version }}
+
+            ${{ github.event.inputs.release_notes }}
+
+            ### Docker Images
+
+            The Docker images for this release are available at:
+            ```bash
+            # Pull specific version
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/agrotech-ai-app:${{ github.event.inputs.version }}
+
+            # Pull latest (same as above)
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/agrotech-ai-app:latest
+
+            # Run the container
+            docker run -d -p 80:80 -p 11434:11434 --name agrotech-app ${{ secrets.DOCKERHUB_USERNAME }}/agrotech-ai-app:${{ github.event.inputs.version }}
+            ```
+
+            ### Changes
+
+            This release includes the latest changes from the main branch.
+          draft: false
+          prerelease: false
+
+      - name: Post-release notification
+        run: |
+          echo "🎉 Production release ${{ github.event.inputs.version }} completed successfully!"
+          echo "📦 Docker image: ${{ secrets.DOCKERHUB_USERNAME }}/agrotech-ai-app:${{ github.event.inputs.version }}"
+          echo "🏷️  Git tag: ${{ github.event.inputs.version }}"
+          echo "🚀 Both version tag and latest tag have been pushed to DockerHub"

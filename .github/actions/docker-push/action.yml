@@ -20,6 +20,10 @@ inputs:
     description: 'Push latest tag'
     required: false
     default: 'true'
+  tag-version:
+    description: 'Docker tag for the image'
+    required: false
+    default: 'true'
 
 outputs:
   image-digest:
@@ -51,7 +55,7 @@ runs:
         file: ${{ inputs.dockerfile-path }}
         push: true
         tags: |
-          ${{ inputs.dockerhub-username }}/${{ inputs.image-name }}:${{ github.sha }}
+          ${{ inputs.dockerhub-username }}/${{ inputs.image-name }}:${{ inputs.tag-version }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
